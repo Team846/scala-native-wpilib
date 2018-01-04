@@ -5,11 +5,26 @@
 #include <cstdarg>
 #include <support/jni_util.h>
 #include <HALUtil.h>
+#include <wchar.h>
 
 using namespace frc;
 using namespace wpi::java;
 
 extern "C" {
+    int strlen16(const char16_t* strarg)
+    {
+       int count = 0;
+       if(!strarg)
+         return -1; //strarg is NULL pointer
+       char16_t* str = (char16_t*) strarg;
+       while(*str)
+       {
+          count++;
+          str++;
+       }
+       return count;
+    }
+
     jclass JNIEnv_FindClass(JNIEnv *thiz, const char *name) {
 //        fprintf(stderr, "finding class %s\n", name);
         return (jclass) 5;
@@ -36,8 +51,11 @@ extern "C" {
     }
 
     jstring JNIEnv_NewString(JNIEnv *env, const jchar *unicode, jsize len) {
-//        fprintf(stderr, "NEW STRING!\n");
-        return NULL;
+        char16_t * actualString = (char16_t *) unicode;
+        printf("allocating %d for size %d\n", (strlen16(actualString) + 1) * sizeof(char16_t), len);
+        char16_t * dst = (char16_t *) malloc((strlen16(actualString) + 1) * sizeof(char16_t));
+        memcpy(dst, actualString, (strlen16(actualString) + 1) * sizeof(char16_t));
+        return (jstring) dst;
     }
 
     jint JNIEnv_ThrowNew(JNIEnv *env, jclass clazz, const char *msg) {
@@ -50,6 +68,20 @@ extern "C" {
         return (jmethodID) 5;
     }
 
+    jsize JNIEnv_GetStringLength(JNIEnv *env, jstring str) {
+        char16_t * actualString = (char16_t *) str;
+        return strlen16(actualString);
+    }
+
+    const jchar * JNIEnv_GetStringCritical(JNIEnv *env, jstring string, jboolean *isCopy) {
+        return (jchar *) string;
+    }
+
+    void JNIEnv_ReleaseStringCritical(JNIEnv *env, jstring string, const jchar *cstring) {
+        char16_t * actualString = (char16_t *) string;
+        free(string);
+    }
+
     JNIEnv* createEnv() {
         struct JNINativeInterface_ * env = (struct JNINativeInterface_ *) malloc(sizeof(struct JNINativeInterface_));
         env->FindClass = JNIEnv_FindClass;
@@ -60,6 +92,9 @@ extern "C" {
         env->NewObject = JNIEnv_NewObject;
         env->ThrowNew = JNIEnv_ThrowNew;
         env->GetMethodID = JNIEnv_GetMethodID;
+        env->GetStringLength = JNIEnv_GetStringLength;
+        env->GetStringCritical = JNIEnv_GetStringCritical;
+        env->ReleaseStringCritical = JNIEnv_ReleaseStringCritical;
 
         void** ptr = (void**) malloc(sizeof(void*));
         *ptr = env;
