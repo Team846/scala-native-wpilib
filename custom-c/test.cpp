@@ -57,7 +57,7 @@ extern "C" {
 
     jstring JNIEnv_NewString(JNIEnv *env, const jchar *unicode, jsize len) {
         char16_t * actualString = (char16_t *) unicode;
-        printf("allocating %d for size %d\n", (strlen16(actualString) + 1) * sizeof(char16_t), len);
+//        printf("allocating %d for size %d\n", (strlen16(actualString) + 1) * sizeof(char16_t), len);
         char16_t * dst = (char16_t *) malloc((strlen16(actualString) + 1) * sizeof(char16_t));
         memcpy(dst, actualString, (strlen16(actualString) + 1) * sizeof(char16_t));
         return (jstring) dst;

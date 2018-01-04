@@ -67,7 +67,6 @@ package object scalanativejni {
     ret
   }
 
-  class _bytebuffer
   type JDirectByteBuffer = Ptr[CStruct2[Ptr[Byte], Int]]
 
   def byteBuffer2JDirectByteBuffer(bb: ByteBuffer): JDirectByteBuffer = {
