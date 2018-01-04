@@ -16,7 +16,26 @@ package object scalanativejni {
   class _cls
   type Cls = Ptr[_cls]
 
-  val env: Env = MockJNI.createEnv()
+  def setShortArrayRegion(env: Env, to: Array[Short], start: Int, len: Int, buf: Ptr[Short]): Unit = {
+    (0 until len).foreach { fromIndex =>
+      to(start + fromIndex) = !(buf + fromIndex)
+    }
+  }
+
+  def setFloatArrayRegion(env: Env, to: Array[Float], start: Int, len: Int, buf: Ptr[Float]): Unit = {
+    (0 until len).foreach { fromIndex =>
+      to(start + fromIndex) = !(buf + fromIndex)
+    }
+  }
+
+  val env: Env = MockJNI.createEnv((env: Env, to: Array[Short], start: Int, len: Int, buf: Ptr[Short]) => {
+    setShortArrayRegion(env, to, start, len, buf)
+  }, (env: Env, to: Array[Float], start: Int, len: Int, buf: Ptr[Float]) => {
+    setFloatArrayRegion(env, to, start, len, buf)
+  }, (env: Env, arr: Array[_]) => {
+    arr.length
+  })
+
   val vm: VM = MockJNI.createVM(env)
   val cls: Cls = null
 
@@ -24,9 +43,11 @@ package object scalanativejni {
 
   @extern
   object MockJNI {
-    def createEnv(): Env = extern
+    def createEnv(setShortArrayRegion: CFunctionPtr5[Env, Array[Short], Int, Int, Ptr[Short], Unit],
+                  setFloatArrayRegion: CFunctionPtr5[Env, Array[Float], Int, Int, Ptr[Float], Unit],
+                  getArrayLength: CFunctionPtr2[Env, Array[_], Int]): Env = extern
     def createVM(env: Env): VM = extern
-    def testVM(vm: VM, env: Env): Unit = extern
+    def testVM(vm: VM, env: Env, arr: Array[Float]): Unit = extern
     def strlen16(str: JString): Int = extern
   }
 

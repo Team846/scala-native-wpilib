@@ -104,7 +104,9 @@ extern "C" {
         return (jlong) actual->len;
     }
 
-    JNIEnv* createEnv() {
+    JNIEnv* createEnv(void (JNICALL *JNIEnv_SetShortArrayRegion) (JNIEnv *env, jshortArray array, jsize start, jsize len, const jshort *buf),
+                      void (JNICALL *JNIEnv_SetFloatArrayRegion) (JNIEnv *env, jfloatArray array, jsize start, jsize len, const jfloat *buf),
+                      jsize (JNICALL *JNIEnv_GetArrayLength) (JNIEnv *env, jarray array)) {
         struct JNINativeInterface_ * env = (struct JNINativeInterface_ *) malloc(sizeof(struct JNINativeInterface_));
         env->FindClass = JNIEnv_FindClass;
         env->NewGlobalRef = JNIEnv_NewGlobalRef;
@@ -120,6 +122,10 @@ extern "C" {
         env->NewDirectByteBuffer = JNIEnv_NewDirectByteBuffer;
         env->GetDirectBufferAddress = JNIEnv_GetDirectBufferAddress;
         env->GetDirectBufferCapacity = JNIEnv_GetDirectBufferCapacity;
+
+        env->SetShortArrayRegion = JNIEnv_SetShortArrayRegion;
+        env->SetFloatArrayRegion = JNIEnv_SetFloatArrayRegion;
+        env->GetArrayLength = JNIEnv_GetArrayLength;
 
         void** ptr = (void**) malloc(sizeof(void*));
         *ptr = env;
@@ -144,7 +150,12 @@ extern "C" {
         return (JavaVM*) ptr;
     }
 
-    void testVM(JavaVM *vm, JNIEnv* env) {
-          CheckStatus(env, 1);
+    void testVM(JavaVM *vm, JNIEnv* env, jfloatArray arr) {
+          printf("size is %d\n", env->GetArrayLength(arr));
+          float *myArray = new float[2];
+          myArray[0] = 104.1;
+          myArray[1] = 918.1;
+          env->SetFloatArrayRegion(arr, 0, 2, myArray);
+          free(myArray);
     }
 }

@@ -20,6 +20,10 @@ object Hello extends RobotBase {
     println(s"got it $foo")
     var lastTime = System.currentTimeMillis()
     while (true) {
+      val before = Array[Float](1, 2, 3)
+      println(s"before: ${before.toList}")
+      scalanativejni.MockJNI.testVM(scalanativejni.vm, scalanativejni.env, before)
+      println(s"after: ${before.toList}")
 
 //      println("getting data!")
       HAL.waitForDSData()

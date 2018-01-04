@@ -25,17 +25,18 @@ object JNIMacrosImpl {
     val jniParams = paramss.map { param =>
       if (param.typeSignature.typeSymbol.fullName == "java.lang.String") {
         q"val ${param.name.asInstanceOf[TermName]}: com.lynbrookrobotics.scalanativejni.JString"
+      } else if (param.typeSignature.typeSymbol.fullName == "java.nio.ByteBuffer") {
+        q"val ${param.name.asInstanceOf[TermName]}: com.lynbrookrobotics.scalanativejni.JDirectByteBuffer"
       } else {
         q"val ${param.name.asInstanceOf[TermName]}: ${param.typeSignature}"
       }
     }
 
     val paramExprs = paramss.map { p =>
-      println(p.typeSignature.typeSymbol.fullName)
       if (p.typeSignature.typeSymbol.fullName == "java.lang.String") {
-        q"_root_.com.lynbrookrobotics.scalanativejni.byteBuffer2JDirectByteBuffer(${p.asTerm.name})"
-      } else if (p.typeSignature.typeSymbol.fullName == "java.nio.ByteBuffer") {
         q"_root_.com.lynbrookrobotics.scalanativejni.string2jString(${p.asTerm.name})"
+      } else if (p.typeSignature.typeSymbol.fullName == "java.nio.ByteBuffer") {
+        q"_root_.com.lynbrookrobotics.scalanativejni.byteBuffer2JDirectByteBuffer(${p.asTerm.name})"
       } else {
         q"${p.asTerm.name}"
       }
