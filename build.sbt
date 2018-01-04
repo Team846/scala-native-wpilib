@@ -1,9 +1,12 @@
 enablePlugins(ScalaNativePlugin)
 
-import scalanative.tools
-import scalanative.optimizer.{inject, pass}
+lazy val macros = project
 
-scalaVersion := "2.11.12"
+lazy val root = project.in(file(".")).dependsOn(macros)
+
+scalaVersion in ThisBuild := "2.11.12"
+
+addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 
 nativeMode := "debug"
 

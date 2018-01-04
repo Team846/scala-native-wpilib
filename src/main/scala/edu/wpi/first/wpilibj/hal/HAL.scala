@@ -1,55 +1,104 @@
 package edu.wpi.first.wpilibj.hal
 
-import edu.wpi.first.wpilibj.JString
+import java.nio.ByteBuffer
 
-import scala.scalanative.native._
+import com.lynbrookrobotics.scalanativejni._
 
-@extern @link("wpilibJavaJNI")
+@jnilib("wpilibJavaJNI")
 object HAL {
-  @name("JNI_OnLoad")
-  def JNI_OnLoad(vm: Ptr[Unit], reserved: Ptr[Unit]): Int = extern
+  def waitForDSData(): Unit = jni
 
-  @name("Java_edu_wpi_first_wpilibj_hal_HAL_waitForDSData")
-  def waitForDSData(env: Ptr[Unit], cls: Ptr[Unit]): Unit = extern
+  def initialize(mode: Int): Int = jni
 
-  @name("Java_edu_wpi_first_wpilibj_hal_HAL_initialize")
-  def initialize(env: Ptr[Unit], cls: Ptr[Unit], mode: Int): Int = extern
+  def observeUserProgramStarting(): Unit = jni
 
-  @name("Java_edu_wpi_first_wpilibj_hal_HAL_observeUserProgramStarting")
-  def observeUserProgramStarting(env: Ptr[Unit], cls: Ptr[Unit]): Unit = extern
+  def observeUserProgramDisabled(): Unit = jni
 
-  @name("Java_edu_wpi_first_wpilibj_hal_HAL_observeUserProgramDisabled")
-  def observeUserProgramDisabled(env: Ptr[Unit], cls: Ptr[Unit]): Unit = extern
+  def observeUserProgramAutonomous(): Unit = jni
 
-  @name("Java_edu_wpi_first_wpilibj_hal_HAL_observeUserProgramAutonomous")
-  def observeUserProgramAutonomous(env: Ptr[Unit], cls: Ptr[Unit]): Unit = extern
+  def observeUserProgramTeleop(): Unit = jni
 
-  @name("Java_edu_wpi_first_wpilibj_hal_HAL_observeUserProgramTeleop")
-  def observeUserProgramTeleop(env: Ptr[Unit], cls: Ptr[Unit]): Unit = extern
+  def observeUserProgramTest(): Unit = jni
 
-  @name("Java_edu_wpi_first_wpilibj_hal_HAL_observeUserProgramTest")
-  def observeUserProgramTest(env: Ptr[Unit], cls: Ptr[Unit]): Unit = extern
+  def report(resource: Int, instanceNumber: Int): Unit = {
+    report(resource, instanceNumber, 0, "")
+  }
 
-  @name("Java_edu_wpi_first_wpilibj_hal_HAL_report")
-  def report(env: Ptr[Unit], cls: Ptr[Unit], resource: Int, instanceNumber: Int, context: Int, feature: JString): Unit = extern
+  def report(resource: Int, instanceNumber: Int, context: Int): Unit = {
+    report(resource, instanceNumber, context, "")
+  }
 
-  @name("Java_edu_wpi_first_wpilibj_hal_HAL_getJoystickIsXbox")
-  def getJoystickIsXbox(env: Ptr[Unit], cls: Ptr[Unit], joystickNum: Byte): Int = extern
+  /**
+    * Report the usage of a resource of interest. <br>
+    *
+    * <p>Original signature: <code>uint32_t report(tResourceType, uint8_t, uint8_t, const
+    * char*)</code>
+    *
+    * @param resource       one of the values in the tResourceType above (max value 51). <br>
+    * @param instanceNumber an index that identifies the resource instance. <br>
+    * @param context        an optional additional context number for some cases (such as module
+    *                       number). Set to 0 to omit. <br>
+    * @param feature        a string to be included describing features in use on a specific
+    *                       resource. Setting the same resource more than once allows you to change
+    *                       the feature string.
+    */
+  def report(resource: Int, instanceNumber: Int, context: Int, feature: String): Int = jni
 
-  @name("Java_edu_wpi_first_wpilibj_hal_HAL_getJoystickType")
-  def getJoystickType(env: Ptr[Unit], cls: Ptr[Unit], joystickNum: Byte): Int = extern
+  private def nativeGetControlWord(): Int = jni
 
-  @name("Java_edu_wpi_first_wpilibj_hal_HAL_getJoystickName")
-  def getJoystickName(env: Ptr[Unit], cls: Ptr[Unit], joystickNum: Byte): JString = extern
+//  @SuppressWarnings(Array("JavadocMethod"))
+//  def getControlWord(controlWord: ControlWord): Unit = {
+//    val word = nativeGetControlWord
+//    controlWord.update((word & 1) != 0, ((word >> 1) & 1) != 0, ((word >> 2) & 1) != 0,
+//      ((word >> 3) & 1) != 0, ((word >> 4) & 1) != 0, ((word >> 5) & 1) != 0)
+//  }
+//
+//  private def nativeGetAllianceStation(): Int = jni
+//
+//  @SuppressWarnings(Array("JavadocMethod"))
+//  def getAllianceStation: AllianceStationID = nativeGetAllianceStation match {
+//    case 0 =>
+//      AllianceStationID.Red1
+//    case 1 =>
+//      AllianceStationID.Red2
+//    case 2 =>
+//      AllianceStationID.Red3
+//    case 3 =>
+//      AllianceStationID.Blue1
+//    case 4 =>
+//      AllianceStationID.Blue2
+//    case 5 =>
+//      AllianceStationID.Blue3
+//    case _ =>
+//      null
+//  }
 
-  @name("Java_edu_wpi_first_wpilibj_hal_HAL_getJoystickAxisType")
-  def getJoystickAxisType(env: Ptr[Unit], cls: Ptr[Unit], joystickNum: Byte, axis: Byte): Int = extern
+  var kMaxJoystickAxes = 12
+  var kMaxJoystickPOVs = 12
 
-  @name("Java_edu_wpi_first_wpilibj_hal_HAL_sendError")
-  def sendError(env: Ptr[Unit], cls: Ptr[Unit], isError: Boolean, errorCode: Int, isLVCode: Boolean, details: JString, location: JString, callStack: JString, printMsg: Boolean): Int = extern
-}
+  def getJoystickAxes(joystickNum: Byte, axesArray: Array[Float]): Short = jni
 
-object HALStatics {
-  val kMaxJoystickAxes = 12
-  val kMaxJoystickPOVs = 12
+  def getJoystickPOVs(joystickNum: Byte, povsArray: Array[Short]): Short = jni
+
+  def getJoystickButtons(joystickNum: Byte, count: ByteBuffer): Int = jni
+
+  def setJoystickOutputs(joystickNum: Byte, outputs: Int, leftRumble: Short, rightRumble: Short): Int = jni
+
+  def getJoystickIsXbox(joystickNum: Byte): Int = jni
+
+  def getJoystickType(joystickNum: Byte): Int = jni
+
+  def getJoystickName(joystickNum: Byte): String = jni
+
+  def getJoystickAxisType(joystickNum: Byte, axis: Byte): Int = jni
+
+  def getMatchTime: Double = jni
+
+  def getSystemActive: Boolean = jni
+
+  def getBrownedOut: Boolean = jni
+
+  def setErrorData(error: String): Int = jni
+
+  def sendError(isError: Boolean, errorCode: Int, isLVCode: Boolean, details: String, location: String, callStack: String, printMsg: Boolean): Int = jni
 }

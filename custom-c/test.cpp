@@ -10,6 +10,11 @@
 using namespace frc;
 using namespace wpi::java;
 
+struct jdbb {
+    uint8_t* ptr;
+    int len;
+};
+
 extern "C" {
     int strlen16(const char16_t* strarg)
     {
@@ -82,6 +87,23 @@ extern "C" {
         free(string);
     }
 
+    jobject JNIEnv_NewDirectByteBuffer(JNIEnv* env, void* address, jlong capacity) {
+        jdbb* created = (jdbb*) malloc(sizeof(jdbb));
+        created->ptr = (uint8_t*) address;
+        created->len = (int) capacity;
+        return (jobject) created;
+    }
+
+    void* JNIEnv_GetDirectBufferAddress(JNIEnv* env, jobject buf) {
+        jdbb* actual = (jdbb*) buf;
+        return (void*) actual->ptr;
+    }
+
+    jlong JNIEnv_GetDirectBufferCapacity(JNIEnv* env, jobject buf) {
+        jdbb* actual = (jdbb*) buf;
+        return (jlong) actual->len;
+    }
+
     JNIEnv* createEnv() {
         struct JNINativeInterface_ * env = (struct JNINativeInterface_ *) malloc(sizeof(struct JNINativeInterface_));
         env->FindClass = JNIEnv_FindClass;
@@ -95,6 +117,9 @@ extern "C" {
         env->GetStringLength = JNIEnv_GetStringLength;
         env->GetStringCritical = JNIEnv_GetStringCritical;
         env->ReleaseStringCritical = JNIEnv_ReleaseStringCritical;
+        env->NewDirectByteBuffer = JNIEnv_NewDirectByteBuffer;
+        env->GetDirectBufferAddress = JNIEnv_GetDirectBufferAddress;
+        env->GetDirectBufferCapacity = JNIEnv_GetDirectBufferCapacity;
 
         void** ptr = (void**) malloc(sizeof(void*));
         *ptr = env;

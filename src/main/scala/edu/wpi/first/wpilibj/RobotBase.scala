@@ -105,7 +105,7 @@ abstract class RobotBase {
     */
   def main(args: Array[String]): Unit = {
     RobotBase.initializeHardwareConfiguration()
-    HAL.report(env, cls, tResourceType.kResourceType_Language, tInstances.kLanguage_Java, 0, "")
+    HAL.report(tResourceType.kResourceType_Language, tInstances.kLanguage_Java, 0, "")
 
     val robot = this
 
@@ -186,7 +186,7 @@ object RobotBase {
     * Common initialization for all robot programs.
     */
   def initializeHardwareConfiguration(): Unit = {
-    val rv = HAL.initialize(env, cls, 0)
+    val rv = HAL.initialize(0)
     assert(rv == 1)
     // Set some implementations so that the static methods work properly
 //    Timer.SetImplementation(new HardwareTimer())

@@ -56,10 +56,10 @@ class IterativeRobot()
     * Provide an alternate "main loop" via startCompetition().
     */
   override def startCompetition(): Unit = {
-    HAL.report(env, cls, tResourceType.kResourceType_Framework, tInstances.kFramework_Iterative, 0, "")
+    HAL.report(tResourceType.kResourceType_Framework, tInstances.kFramework_Iterative, 0, "")
     robotInit()
     // Tell the DS that the robot is ready to be enabled
-    HAL.observeUserProgramStarting(env, cls)
+    HAL.observeUserProgramStarting()
     // loop forever, calling the appropriate mode-dependent function
 //    LiveWindow.setEnabled(false)
     while ( {
@@ -78,7 +78,7 @@ class IterativeRobot()
           m_teleopInitialized = false
           m_testInitialized = false
         }
-        HAL.observeUserProgramDisabled(env, cls)
+        HAL.observeUserProgramDisabled()
         disabledPeriodic()
       }
       else if (isTest) { // call TestInit() if we are now just entering test mode from either
@@ -91,7 +91,7 @@ class IterativeRobot()
           m_teleopInitialized = false
           m_disabledInitialized = false
         }
-        HAL.observeUserProgramTest(env, cls)
+        HAL.observeUserProgramTest()
         testPeriodic()
       }
       else if (isAutonomous) { // call Autonomous_Init() if this is the first time
@@ -107,7 +107,7 @@ class IterativeRobot()
           m_teleopInitialized = false
           m_disabledInitialized = false
         }
-        HAL.observeUserProgramAutonomous(env, cls)
+        HAL.observeUserProgramAutonomous()
         autonomousPeriodic()
       }
       else { // call Teleop_Init() if this is the first time
@@ -120,7 +120,7 @@ class IterativeRobot()
           m_autonomousInitialized = false
           m_disabledInitialized = false
         }
-        HAL.observeUserProgramTeleop(env, cls)
+        HAL.observeUserProgramTeleop()
         teleopPeriodic()
       }
       robotPeriodic()

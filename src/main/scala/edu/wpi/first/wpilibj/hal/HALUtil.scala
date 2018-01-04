@@ -7,12 +7,13 @@
 
 package edu.wpi.first.wpilibj.hal
 
-import edu.wpi.first.wpilibj.JString
+import com.lynbrookrobotics.scalanativejni._
 
 import scala.scalanative.native.{Ptr, extern, link, name}
 
-@extern @link("wpilibJavaJNI")
+@jnilib("wpilibJavaJNI")
 object HALUtil {
+  JNILoad.JNI_OnLoad(vm, null)
 //  final val NULL_PARAMETER = -1005
 //  final val SAMPLE_RATE_TOO_HIGH = 1001
 //  final val VOLTAGE_OUT_OF_RANGE = 1002
@@ -22,6 +23,17 @@ object HALUtil {
 //  final val NO_AVAILABLE_RESOURCES = -104
 //  final val PARAMETER_OUT_OF_RANGE = -1028
 
-  @name("Java_edu_wpi_first_wpilibj_hal_HALUtil_getHALErrorMessage")
-  def getHALErrorMessage(env: Ptr[Unit], cls: Ptr[Unit], code: Int): JString = extern
+//  @scala.scalanative.native.extern() @scala.scalanative.native.link("wpilibJavaJNI") object linker {
+//    @scala.scalanative.native.name("Java_edu_wpi_first_wpilibj_hal_HALUtil_getHALErrorMessage")
+//    def native(env: com.lynbrookrobotics.scalanativejni.Env, cls: com.lynbrookrobotics.scalanativejni.Cls, code: Int): com.lynbrookrobotics.scalanativejni.JString = scala.scalanative.native.extern
+//  }
+
+
+  def getHALErrorMessage(code: Int): String = jni
+}
+
+@extern @link("wpilibJavaJNI")
+object JNILoad {
+  @name("JNI_OnLoad")
+  def JNI_OnLoad(vm: VM, reserved: Ptr[Unit]): Int = extern
 }
