@@ -19,7 +19,7 @@ import edu.wpi.first.wpilibj.hal.FRCNetComm.tInstances
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tResourceType
 import edu.wpi.first.wpilibj.hal.HAL
 //import edu.wpi.first.wpilibj.internal.HardwareHLUsageReporting
-//import edu.wpi.first.wpilibj.internal.HardwareTimer
+import edu.wpi.first.wpilibj.internal.HardwareTimer
 //import edu.wpi.first.wpilibj.networktables.NetworkTable
 //import edu.wpi.first.wpilibj.util.WPILibVersion
 
@@ -189,9 +189,9 @@ object RobotBase {
     val rv = HAL.initialize(0)
     assert(rv == 1)
     // Set some implementations so that the static methods work properly
-//    Timer.SetImplementation(new HardwareTimer())
+    Timer.SetImplementation(new HardwareTimer())
 //    HLUsageReporting.SetImplementation(new HardwareHLUsageReporting())
-//    RobotState.SetImplementation(DriverStation.getInstance)
+    RobotState.SetImplementation(DriverStation.getInstance)
     // Load opencv
 //    try
 //      System.loadLibrary(Core.NATIVE_LIBRARY_NAME)

@@ -26,7 +26,7 @@ import edu.wpi.first.wpilibj.hal.PowerJNI
   * <p>The single DriverStation instance is created statically with the instance static member
   * variable.
   */
-class DriverStation private() {
+class DriverStation private() extends RobotState.Interface {
   private class HALJoystickButtons {
     var m_buttons = 0
     var m_count = 0
@@ -665,7 +665,7 @@ class DriverStation private() {
       // notify isNewControlData variable
       m_newControlData.set(true)
       if ({ safetyCounter += 1; safetyCounter } >= 4) {
-        //MotorSafetyHelper.checkMotors
+        MotorSafetyHelper.checkMotors
         safetyCounter = 0
       }
       if (m_userInDisabled) HAL.observeUserProgramDisabled
@@ -751,7 +751,13 @@ object DriverStation {
   }
 
   private def reportErrorImpl(isError: Boolean, code: Int, error: String, printTrace: Boolean): Unit = {
-    val traces = Thread.currentThread.getStackTrace
+    //val traces = Thread.currentThread.getStackTrace
+    val traces = try { // Shadaj: "there must be a better way to do this, right?"
+      throw new Exception()
+    } catch {
+      case e: Throwable => e.getStackTrace
+    }
+
     var locString: String = null
     if (traces.length > 3) locString = traces(3).toString
     else locString = ""
