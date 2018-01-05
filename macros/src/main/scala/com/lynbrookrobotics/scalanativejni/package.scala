@@ -47,7 +47,7 @@ package object scalanativejni {
                   setFloatArrayRegion: CFunctionPtr5[Env, Array[Float], Int, Int, Ptr[Float], Unit],
                   getArrayLength: CFunctionPtr2[Env, Array[_], Int]): Env = extern
     def createVM(env: Env): VM = extern
-    def testVM(vm: VM, env: Env, arr: Array[Float]): Unit = extern
+    def testVM(vm: VM, env: Env): Unit = extern
     def strlen16(str: JString): Int = extern
   }
 

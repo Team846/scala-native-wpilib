@@ -15,6 +15,8 @@ struct jdbb {
     int len;
 };
 
+jint Java_edu_wpi_first_wpilibj_hal_PWMJNI_initializePWMPort(JNIEnv *env, jclass, jint id);
+
 extern "C" {
     int strlen16(const char16_t* strarg)
     {
@@ -49,7 +51,7 @@ extern "C" {
     }
 
     jobject JNIEnv_NewObject(JNIEnv *thiz, jclass cls, jmethodID constructor, ...) {
-//        fprintf(stderr, "in newObjectV!\n");
+        fprintf(stderr, "in newObjectV!\n");
 //        char* arg = va_arg(args, char*);
 //        fprintf(stderr, "")
         return NULL;
@@ -150,12 +152,8 @@ extern "C" {
         return (JavaVM*) ptr;
     }
 
-    void testVM(JavaVM *vm, JNIEnv* env, jfloatArray arr) {
-          printf("size is %d\n", env->GetArrayLength(arr));
-          float *myArray = new float[2];
-          myArray[0] = 104.1;
-          myArray[1] = 918.1;
-          env->SetFloatArrayRegion(arr, 0, 2, myArray);
-          free(myArray);
+    void testVM(JavaVM *vm, JNIEnv* env) {
+        printf("initing\n");
+        //Java_edu_wpi_first_wpilibj_hal_PWMJNI_initializePWMPort(env, NULL, (jint) 33554688);
     }
 }

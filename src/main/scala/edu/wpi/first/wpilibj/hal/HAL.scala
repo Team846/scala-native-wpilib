@@ -6,6 +6,8 @@ import com.lynbrookrobotics.scalanativejni._
 
 @jnilib("wpilibJavaJNI")
 object HAL {
+  JNILoad.JNI_OnLoad(vm, null)
+
   def waitForDSData(): Unit = jni
 
   def initialize(mode: Int): Int = jni
