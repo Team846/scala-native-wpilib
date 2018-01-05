@@ -1,4 +1,6 @@
-package edu.wpi.first.wpilibj
+package com.lynbrookrobotics.example
+
+import edu.wpi.first.wpilibj.{IterativeRobot, Servo, Timer}
 
 object Hello extends IterativeRobot {
   lazy val pwm = new Servo(0)

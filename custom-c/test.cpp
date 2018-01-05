@@ -15,8 +15,6 @@ struct jdbb {
     int len;
 };
 
-jint Java_edu_wpi_first_wpilibj_hal_PWMJNI_initializePWMPort(JNIEnv *env, jclass, jint id);
-
 extern "C" {
     int strlen16(const char16_t* strarg)
     {
