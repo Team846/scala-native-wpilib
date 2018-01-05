@@ -46,32 +46,32 @@ object HAL {
 
   private def nativeGetControlWord(): Int = jni
 
-//  @SuppressWarnings(Array("JavadocMethod"))
-//  def getControlWord(controlWord: ControlWord): Unit = {
-//    val word = nativeGetControlWord
-//    controlWord.update((word & 1) != 0, ((word >> 1) & 1) != 0, ((word >> 2) & 1) != 0,
-//      ((word >> 3) & 1) != 0, ((word >> 4) & 1) != 0, ((word >> 5) & 1) != 0)
-//  }
-//
-//  private def nativeGetAllianceStation(): Int = jni
-//
-//  @SuppressWarnings(Array("JavadocMethod"))
-//  def getAllianceStation: AllianceStationID = nativeGetAllianceStation match {
-//    case 0 =>
-//      AllianceStationID.Red1
-//    case 1 =>
-//      AllianceStationID.Red2
-//    case 2 =>
-//      AllianceStationID.Red3
-//    case 3 =>
-//      AllianceStationID.Blue1
-//    case 4 =>
-//      AllianceStationID.Blue2
-//    case 5 =>
-//      AllianceStationID.Blue3
-//    case _ =>
-//      null
-//  }
+  @SuppressWarnings(Array("JavadocMethod"))
+  def getControlWord(controlWord: ControlWord): Unit = {
+    val word = nativeGetControlWord
+    controlWord.update((word & 1) != 0, ((word >> 1) & 1) != 0, ((word >> 2) & 1) != 0,
+      ((word >> 3) & 1) != 0, ((word >> 4) & 1) != 0, ((word >> 5) & 1) != 0)
+  }
+
+  private def nativeGetAllianceStation(): Int = jni
+
+  @SuppressWarnings(Array("JavadocMethod"))
+  def getAllianceStation: AllianceStationID = nativeGetAllianceStation match {
+    case 0 =>
+      AllianceStationID.Red1
+    case 1 =>
+      AllianceStationID.Red2
+    case 2 =>
+      AllianceStationID.Red3
+    case 3 =>
+      AllianceStationID.Blue1
+    case 4 =>
+      AllianceStationID.Blue2
+    case 5 =>
+      AllianceStationID.Blue3
+    case _ =>
+      null
+  }
 
   var kMaxJoystickAxes = 12
   var kMaxJoystickPOVs = 12

@@ -40,7 +40,7 @@ abstract class RobotBase {
 //  NetworkTable.setPersistentFilename("/home/lvuser/networktables.ini")
 //  NetworkTable.setServerMode // must be before b
 
-//  val m_ds = DriverStation.getInstance
+  val m_ds = DriverStation.getInstance
 //  NetworkTable.getTable("") // forces network tables to initialize
 //  NetworkTable.getTable("LiveWindow").getSubTable("~STATUS~").putBoolean("LW Enabled", false)
 
@@ -55,14 +55,14 @@ abstract class RobotBase {
     *
     * @return True if the Robot is currently disabled by the field controls.
     */
-  def isDisabled: Boolean = false//m_ds.isDisabled
+  def isDisabled: Boolean = m_ds.isDisabled
 
   /**
     * Determine if the Robot is currently enabled.
     *
     * @return True if the Robot is currently enabled by the field controls.
     */
-  def isEnabled: Boolean = false//m_ds.isEnabled
+  def isEnabled: Boolean = m_ds.isEnabled
 
   /**
     * Determine if the robot is currently in Autonomous mode as determined by the field
@@ -70,7 +70,7 @@ abstract class RobotBase {
     *
     * @return True if the robot is currently operating Autonomously.
     */
-  def isAutonomous: Boolean = false//m_ds.isAutonomous
+  def isAutonomous: Boolean = m_ds.isAutonomous
 
   /**
     * Determine if the robot is currently in Test mode as determined by the driver
@@ -78,7 +78,7 @@ abstract class RobotBase {
     *
     * @return True if the robot is currently operating in Test mode.
     */
-  def isTest: Boolean = false//m_ds.isTest
+  def isTest: Boolean = m_ds.isTest
 
   /**
     * Determine if the robot is currently in Operator Control mode as determined by the field
@@ -86,14 +86,14 @@ abstract class RobotBase {
     *
     * @return True if the robot is currently operating in Tele-Op mode.
     */
-  def isOperatorControl: Boolean = false//m_ds.isOperatorControl
+  def isOperatorControl: Boolean = m_ds.isOperatorControl
 
   /**
     * Indicates if new data is available from the driver station.
     *
     * @return Has new data arrived over the network since the last time this function was called?
     */
-  def isNewDataAvailable: Boolean = false//m_ds.isNewControlData
+  def isNewDataAvailable: Boolean = m_ds.isNewControlData
 
   /**
     * Provide an alternate "main loop" via startCompetition().

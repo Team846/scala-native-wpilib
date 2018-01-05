@@ -14,22 +14,33 @@ import scala.scalanative.native.{Ptr, extern, link, name}
 @jnilib("wpilibJavaJNI")
 object HALUtil {
   JNILoad.JNI_OnLoad(vm, null)
-//  final val NULL_PARAMETER = -1005
-//  final val SAMPLE_RATE_TOO_HIGH = 1001
-//  final val VOLTAGE_OUT_OF_RANGE = 1002
-//  final val LOOP_TIMING_ERROR = 1004
-//  final val INCOMPATIBLE_STATE = 1015
-//  final val ANALOG_TRIGGER_PULSE_OUTPUT_ERROR = -1011
-//  final val NO_AVAILABLE_RESOURCES = -104
-//  final val PARAMETER_OUT_OF_RANGE = -1028
 
-//  @scala.scalanative.native.extern() @scala.scalanative.native.link("wpilibJavaJNI") object linker {
-//    @scala.scalanative.native.name("Java_edu_wpi_first_wpilibj_hal_HALUtil_getHALErrorMessage")
-//    def native(env: com.lynbrookrobotics.scalanativejni.Env, cls: com.lynbrookrobotics.scalanativejni.Cls, code: Int): com.lynbrookrobotics.scalanativejni.JString = scala.scalanative.native.extern
-//  }
+  val NULL_PARAMETER: Int = -1005
+  val SAMPLE_RATE_TOO_HIGH = 1001
+  val VOLTAGE_OUT_OF_RANGE = 1002
+  val LOOP_TIMING_ERROR = 1004
+  val INCOMPATIBLE_STATE = 1015
+  val ANALOG_TRIGGER_PULSE_OUTPUT_ERROR: Int = -1011
+  val NO_AVAILABLE_RESOURCES: Int = -104
+  val PARAMETER_OUT_OF_RANGE: Int = -1028
 
+  def getFPGAVersion: Short = jni
+
+  def getFPGARevision: Int = jni
+
+  def getFPGATime: Long = jni
+
+  def getHALRuntimeType: Int = jni
+
+  def getFPGAButton: Boolean = jni
 
   def getHALErrorMessage(code: Int): String = jni
+
+  def getHALErrno: Int = jni
+
+  def getHALstrerror(errno: Int): String = jni
+
+  def getHALstrerror: String = getHALstrerror(getHALErrno)
 }
 
 @extern @link("wpilibJavaJNI")

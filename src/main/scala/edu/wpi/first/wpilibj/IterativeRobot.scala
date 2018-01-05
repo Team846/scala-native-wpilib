@@ -43,10 +43,6 @@ class IterativeRobot()
   * initialization for disabled, autonomous, and teleop code.
   */
   extends RobotBase { // set status for initialization of disabled, autonomous, and teleop code.
-  m_disabledInitialized = false
-  m_autonomousInitialized = false
-  m_teleopInitialized = false
-  m_testInitialized = false
   private var m_disabledInitialized = false
   private var m_autonomousInitialized = false
   private var m_teleopInitialized = false
@@ -65,7 +61,7 @@ class IterativeRobot()
     while ( {
       true
     }) { // Wait for new data to arrive
-//      m_ds.waitForData
+      m_ds.waitForData()
       // Call the appropriate function depending upon the current robot mode
       if (isDisabled) { // call DisabledInit() if we are now just entering disabled mode from
         // either a different mode or from power-on
