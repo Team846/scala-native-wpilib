@@ -18,10 +18,10 @@ import java.io.IOException
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tInstances
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tResourceType
 import edu.wpi.first.wpilibj.hal.HAL
-//import edu.wpi.first.wpilibj.internal.HardwareHLUsageReporting
+import edu.wpi.first.wpilibj.internal.HardwareHLUsageReporting
 import edu.wpi.first.wpilibj.internal.HardwareTimer
 //import edu.wpi.first.wpilibj.networktables.NetworkTable
-//import edu.wpi.first.wpilibj.util.WPILibVersion
+import edu.wpi.first.wpilibj.util.WPILibVersion
 
 /**
   * Constructor for a generic robot program. User code should be placed in the constructor that
@@ -120,7 +120,7 @@ abstract class RobotBase {
         val output = new FileOutputStream(file)
         try {
           output.write("Java ".getBytes)
-          //output.write(WPILibVersion.Version.getBytes)
+          output.write(WPILibVersion.Version.getBytes)
         } finally if (output != null) output.close()
       }
     } catch {
@@ -190,7 +190,7 @@ object RobotBase {
     assert(rv == 1)
     // Set some implementations so that the static methods work properly
     Timer.SetImplementation(new HardwareTimer())
-//    HLUsageReporting.SetImplementation(new HardwareHLUsageReporting())
+    HLUsageReporting.SetImplementation(new HardwareHLUsageReporting())
     RobotState.SetImplementation(DriverStation.getInstance)
     // Load opencv
 //    try
