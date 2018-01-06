@@ -30,24 +30,21 @@ object JNIMacrosImpl {
       q"${p.asTerm.name}"
     }
 
-    val origRetType = method.returnType
-    val jniRetType = tq"${origRetType.typeSymbol}"
-
     val linkerObject =
       q"""
          @_root_.scala.scalanative.native.extern @_root_.scala.scalanative.native.link(${linkLibrary.tree}) object linker {
            @_root_.scala.scalanative.native.name(${Literal(Constant(jniName))})
-           def native(env: _root_.com.lynbrookrobotics.scalanativejni.Env, cls: _root_.com.lynbrookrobotics.scalanativejni.Cls, ..$jniParams): $jniRetType = _root_.scala.scalanative.native.extern
+           def native(env: _root_.com.lynbrookrobotics.scalanativejni.Env,
+                      cls: _root_.com.lynbrookrobotics.scalanativejni.Cls,
+                      ..$jniParams): ${method.returnType.typeSymbol} =
+             _root_.scala.scalanative.native.extern
          }
        """
-
-    val coreRet = q"linker.native(_root_.com.lynbrookrobotics.scalanativejni.env, _root_.com.lynbrookrobotics.scalanativejni.cls, ..$paramExprs)"
-    val ret = coreRet
 
     c.Expr[T](
       q"""
          $linkerObject
-         $ret
+         linker.native(_root_.com.lynbrookrobotics.scalanativejni.env, _root_.com.lynbrookrobotics.scalanativejni.cls, ..$paramExprs)
        """)
   }
 }
