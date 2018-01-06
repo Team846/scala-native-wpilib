@@ -55,14 +55,6 @@ extern "C" {
         return NULL;
     }
 
-    jstring JNIEnv_NewString(JNIEnv *env, const jchar *unicode, jsize len) {
-        char16_t * actualString = (char16_t *) unicode;
-//        printf("allocating %d for size %d\n", (strlen16(actualString) + 1) * sizeof(char16_t), len);
-        char16_t * dst = (char16_t *) malloc((strlen16(actualString) + 1) * sizeof(char16_t));
-        memcpy(dst, actualString, (strlen16(actualString) + 1) * sizeof(char16_t));
-        return (jstring) dst;
-    }
-
     jint JNIEnv_ThrowNew(JNIEnv *env, jclass clazz, const char *msg) {
 //        fprintf(stderr, "HTORLKWJ\n");
         return 0;
@@ -71,20 +63,6 @@ extern "C" {
     jmethodID JNIEnv_GetMethodID(JNIEnv *env, jclass clazz, const char *name, const char *sig) {
 //        fprintf(stderr, "GETMETHODID!\n");
         return (jmethodID) 5;
-    }
-
-    jsize JNIEnv_GetStringLength(JNIEnv *env, jstring str) {
-        char16_t * actualString = (char16_t *) str;
-        return strlen16(actualString);
-    }
-
-    const jchar * JNIEnv_GetStringCritical(JNIEnv *env, jstring string, jboolean *isCopy) {
-        return (jchar *) string;
-    }
-
-    void JNIEnv_ReleaseStringCritical(JNIEnv *env, jstring string, const jchar *cstring) {
-        char16_t * actualString = (char16_t *) string;
-        free(string);
     }
 
     jobject JNIEnv_NewDirectByteBuffer(JNIEnv* env, void* address, jlong capacity) {
@@ -104,7 +82,12 @@ extern "C" {
         return (jlong) actual->len;
     }
 
-    JNIEnv* createEnv(void (JNICALL *JNIEnv_SetShortArrayRegion) (JNIEnv *env, jshortArray array, jsize start, jsize len, const jshort *buf),
+    JNIEnv* createEnv(jstring (JNICALL *JNIEnv_NewString) (JNIEnv *env, const jchar *unicode, jsize len),
+                      jsize (JNICALL *JNIEnv_GetStringLength) (JNIEnv *env, jstring str),
+                      const jchar * (JNICALL *JNIEnv_GetStringCritical) (JNIEnv *env, jstring string, jboolean *isCopy),
+                      void (JNICALL *JNIEnv_ReleaseStringCritical) (JNIEnv *env, jstring string, const jchar *cstring),
+
+                      void (JNICALL *JNIEnv_SetShortArrayRegion) (JNIEnv *env, jshortArray array, jsize start, jsize len, const jshort *buf),
                       void (JNICALL *JNIEnv_SetFloatArrayRegion) (JNIEnv *env, jfloatArray array, jsize start, jsize len, const jfloat *buf),
                       jsize (JNICALL *JNIEnv_GetArrayLength) (JNIEnv *env, jarray array)) {
         struct JNINativeInterface_ * env = (struct JNINativeInterface_ *) malloc(sizeof(struct JNINativeInterface_));
@@ -112,16 +95,18 @@ extern "C" {
         env->NewGlobalRef = JNIEnv_NewGlobalRef;
         env->DeleteGlobalRef = JNIEnv_DeleteGlobalRef;
         env->DeleteLocalRef = JNIEnv_DeleteLocalRef;
-        env->NewString = JNIEnv_NewString;
         env->NewObject = JNIEnv_NewObject;
         env->ThrowNew = JNIEnv_ThrowNew;
         env->GetMethodID = JNIEnv_GetMethodID;
-        env->GetStringLength = JNIEnv_GetStringLength;
-        env->GetStringCritical = JNIEnv_GetStringCritical;
-        env->ReleaseStringCritical = JNIEnv_ReleaseStringCritical;
+
         env->NewDirectByteBuffer = JNIEnv_NewDirectByteBuffer;
         env->GetDirectBufferAddress = JNIEnv_GetDirectBufferAddress;
         env->GetDirectBufferCapacity = JNIEnv_GetDirectBufferCapacity;
+
+        env->NewString = JNIEnv_NewString;
+        env->GetStringLength = JNIEnv_GetStringLength;
+        env->GetStringCritical = JNIEnv_GetStringCritical;
+        env->ReleaseStringCritical = JNIEnv_ReleaseStringCritical;
 
         env->SetShortArrayRegion = JNIEnv_SetShortArrayRegion;
         env->SetFloatArrayRegion = JNIEnv_SetFloatArrayRegion;

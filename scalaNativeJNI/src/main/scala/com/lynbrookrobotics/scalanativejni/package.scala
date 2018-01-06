@@ -16,6 +16,37 @@ package object scalanativejni {
   class _cls
   type Cls = Ptr[_cls]
 
+  def newString(env: Env, cstr: CString, len: Int): String = {
+    val bytesCount = len * 2
+    val bytes = new Array[Byte](bytesCount)
+
+    var c = 0
+    while (c < bytesCount) {
+      bytes(c) = !(cstr + c + 1) // reversed because little endian vs big endian
+      bytes(c + 1) = !(cstr + c)
+      c += 2
+    }
+
+    new String(bytes, Charset.forName("UTF-16"))
+  }
+
+  def getStringCritical(env: Env, str: String): Ptr[Byte] = {
+    val bytes = str.getBytes(Charset.forName("UTF-16"))
+    val cstr  = stdlib.malloc(bytes.length + 2)
+
+    var c = 0
+    while (c < bytes.length) {
+      !(cstr + c + 1) = bytes(c) // reversed because little endian vs big endian
+      !(cstr + c) = bytes(c + 1)
+      c += 2
+    }
+
+    !(cstr + bytes.length) = 0.toByte // NUL
+    !(cstr + (bytes.length + 1)) = 0.toByte // NUL
+
+    cstr
+  }
+
   def setShortArrayRegion(env: Env, to: Array[Short], start: Int, len: Int, buf: Ptr[Short]): Unit = {
     (0 until len).foreach { fromIndex =>
       to(start + fromIndex) = !(buf + fromIndex)
@@ -28,13 +59,23 @@ package object scalanativejni {
     }
   }
 
-  val env: Env = MockJNI.createEnv((env: Env, to: Array[Short], start: Int, len: Int, buf: Ptr[Short]) => {
-    setShortArrayRegion(env, to, start, len, buf)
-  }, (env: Env, to: Array[Float], start: Int, len: Int, buf: Ptr[Float]) => {
-    setFloatArrayRegion(env, to, start, len, buf)
-  }, (env: Env, arr: Array[_]) => {
-    arr.length
-  })
+  val env: Env = MockJNI.createEnv(
+    (env: Env, nativeString: CString, length: Int) => {
+      newString(env, nativeString, length)
+    },
+    (env: Env, str: String) => str.length,
+    (env: Env, str: String) => getStringCritical(env, str),
+    (env: Env, str: String, cStr: Ptr[Byte]) => stdlib.free(cStr),
+    (env: Env, to: Array[Short], start: Int, len: Int, buf: Ptr[Short]) => {
+      setShortArrayRegion(env, to, start, len, buf)
+    },
+    (env: Env, to: Array[Float], start: Int, len: Int, buf: Ptr[Float]) => {
+      setFloatArrayRegion(env, to, start, len, buf)
+    },
+    (env: Env, arr: Array[_]) => {
+      arr.length
+    }
+  )
 
   val vm: VM = MockJNI.createVM(env)
   val cls: Cls = null
@@ -43,49 +84,15 @@ package object scalanativejni {
 
   @extern
   object MockJNI {
-    def createEnv(setShortArrayRegion: CFunctionPtr5[Env, Array[Short], Int, Int, Ptr[Short], Unit],
+    def createEnv(newString: CFunctionPtr3[Env, CString, Int, String],
+                  getStringLength: CFunctionPtr2[Env, String, Int],
+                  getStringCritical: CFunctionPtr2[Env, String, Ptr[Byte]],
+                  releaseStringCritical: CFunctionPtr3[Env, String, Ptr[Byte], Unit],
+                  setShortArrayRegion: CFunctionPtr5[Env, Array[Short], Int, Int, Ptr[Short], Unit],
                   setFloatArrayRegion: CFunctionPtr5[Env, Array[Float], Int, Int, Ptr[Float], Unit],
                   getArrayLength: CFunctionPtr2[Env, Array[_], Int]): Env = extern
     def createVM(env: Env): VM = extern
     def testVM(vm: VM, env: Env): Unit = extern
-    def strlen16(str: JString): Int = extern
-  }
-
-  class _jstring
-  type JString = Ptr[_jstring]
-
-  def string2jString(string: String): JString = {
-    val bytes = string.getBytes(Charset.forName("UTF-16"))
-    val cstr  = stdlib.malloc(bytes.length + 2)
-
-    var c = 0
-    while (c < bytes.length) {
-      !(cstr + c + 1) = bytes(c) // reversed because little endian vs big endian lol
-      !(cstr + c) = bytes(c + 1)
-      c += 2
-    }
-
-    !(cstr + bytes.length) = 0.toByte // NUL
-    !(cstr + (bytes.length + 1)) = 0.toByte // NUL
-
-    cstr.asInstanceOf[JString]
-  }
-
-  def jString2String(jstring: JString): String = {
-    val bytesCount = MockJNI.strlen16(jstring) * 2
-    val cstr = jstring.asInstanceOf[CString]
-    val bytes = new Array[Byte](bytesCount)
-
-    var c = 0 // pad the left with a zero
-    while (c < bytesCount) {
-      bytes(c) = !(cstr + c + 1) // reversed because little endian vs big endian lol
-      bytes(c + 1) = !(cstr + c)
-      c += 2
-    }
-
-    val ret = new String(bytes, Charset.forName("UTF-16"))
-    stdlib.free(jstring.asInstanceOf[Ptr[Byte]])
-    ret
   }
 
   type JDirectByteBuffer = Ptr[CStruct2[Ptr[Byte], Int]]

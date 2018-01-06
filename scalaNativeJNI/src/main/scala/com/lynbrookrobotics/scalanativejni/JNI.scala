@@ -23,9 +23,7 @@ object JNIMacrosImpl {
     val jniName = s"Java_${objectPath.replace('.', '_')}_$methodName"
 
     val jniParams = paramss.map { param =>
-      if (param.typeSignature.typeSymbol.fullName == "java.lang.String") {
-        q"val ${param.name.asInstanceOf[TermName]}: com.lynbrookrobotics.scalanativejni.JString"
-      } else if (param.typeSignature.typeSymbol.fullName == "java.nio.ByteBuffer") {
+      if (param.typeSignature.typeSymbol.fullName == "java.nio.ByteBuffer") {
         q"val ${param.name.asInstanceOf[TermName]}: com.lynbrookrobotics.scalanativejni.JDirectByteBuffer"
       } else {
         q"val ${param.name.asInstanceOf[TermName]}: ${param.typeSignature}"
@@ -33,9 +31,7 @@ object JNIMacrosImpl {
     }
 
     val paramExprs = paramss.map { p =>
-      if (p.typeSignature.typeSymbol.fullName == "java.lang.String") {
-        q"_root_.com.lynbrookrobotics.scalanativejni.string2jString(${p.asTerm.name})"
-      } else if (p.typeSignature.typeSymbol.fullName == "java.nio.ByteBuffer") {
+      if (p.typeSignature.typeSymbol.fullName == "java.nio.ByteBuffer") {
         q"_root_.com.lynbrookrobotics.scalanativejni.byteBuffer2JDirectByteBuffer(${p.asTerm.name})"
       } else {
         q"${p.asTerm.name}"
@@ -43,9 +39,7 @@ object JNIMacrosImpl {
     }
 
     val origRetType = method.returnType
-    val jniRetType = if (origRetType.typeSymbol.fullName == "java.lang.String") {
-      tq"_root_.com.lynbrookrobotics.scalanativejni.JString"
-    } else if (origRetType.typeSymbol.fullName == "java.nio.ByteBuffer") {
+    val jniRetType = if (origRetType.typeSymbol.fullName == "java.nio.ByteBuffer") {
       tq"_root_.com.lynbrookrobotics.scalanativejni.JDirectByteBuffer"
     } else tq"${origRetType.typeSymbol}"
 
@@ -58,9 +52,7 @@ object JNIMacrosImpl {
        """
 
     val coreRet = q"linker.native(_root_.com.lynbrookrobotics.scalanativejni.env, _root_.com.lynbrookrobotics.scalanativejni.cls, ..$paramExprs)"
-    val ret = if (origRetType.typeSymbol.fullName == "java.lang.String") {
-      q"_root_.com.lynbrookrobotics.scalanativejni.jString2String($coreRet)"
-    } else if (origRetType.typeSymbol.fullName == "java.nio.ByteBuffer") {
+    val ret = if (origRetType.typeSymbol.fullName == "java.nio.ByteBuffer") {
       q"_root_.com.lynbrookrobotics.scalanativejni.jDirectByteBuffer2ByteBuffer($coreRet)"
     } else coreRet
 
