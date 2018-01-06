@@ -23,25 +23,15 @@ object JNIMacrosImpl {
     val jniName = s"Java_${objectPath.replace('.', '_')}_$methodName"
 
     val jniParams = paramss.map { param =>
-      if (param.typeSignature.typeSymbol.fullName == "java.nio.ByteBuffer") {
-        q"val ${param.name.asInstanceOf[TermName]}: com.lynbrookrobotics.scalanativejni.JDirectByteBuffer"
-      } else {
-        q"val ${param.name.asInstanceOf[TermName]}: ${param.typeSignature}"
-      }
+      q"val ${param.name.asInstanceOf[TermName]}: ${param.typeSignature}"
     }
 
     val paramExprs = paramss.map { p =>
-      if (p.typeSignature.typeSymbol.fullName == "java.nio.ByteBuffer") {
-        q"_root_.com.lynbrookrobotics.scalanativejni.byteBuffer2JDirectByteBuffer(${p.asTerm.name})"
-      } else {
-        q"${p.asTerm.name}"
-      }
+      q"${p.asTerm.name}"
     }
 
     val origRetType = method.returnType
-    val jniRetType = if (origRetType.typeSymbol.fullName == "java.nio.ByteBuffer") {
-      tq"_root_.com.lynbrookrobotics.scalanativejni.JDirectByteBuffer"
-    } else tq"${origRetType.typeSymbol}"
+    val jniRetType = tq"${origRetType.typeSymbol}"
 
     val linkerObject =
       q"""
@@ -52,9 +42,7 @@ object JNIMacrosImpl {
        """
 
     val coreRet = q"linker.native(_root_.com.lynbrookrobotics.scalanativejni.env, _root_.com.lynbrookrobotics.scalanativejni.cls, ..$paramExprs)"
-    val ret = if (origRetType.typeSymbol.fullName == "java.nio.ByteBuffer") {
-      q"_root_.com.lynbrookrobotics.scalanativejni.jDirectByteBuffer2ByteBuffer($coreRet)"
-    } else coreRet
+    val ret = coreRet
 
     c.Expr[T](
       q"""

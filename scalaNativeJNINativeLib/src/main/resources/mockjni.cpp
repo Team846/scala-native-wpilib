@@ -10,26 +10,7 @@
 using namespace frc;
 using namespace wpi::java;
 
-struct jdbb {
-    uint8_t* ptr;
-    int len;
-};
-
 extern "C" {
-    int strlen16(const char16_t* strarg)
-    {
-       int count = 0;
-       if(!strarg)
-         return -1; //strarg is NULL pointer
-       char16_t* str = (char16_t*) strarg;
-       while(*str)
-       {
-          count++;
-          str++;
-       }
-       return count;
-    }
-
     jclass JNIEnv_FindClass(JNIEnv *thiz, const char *name) {
 //        fprintf(stderr, "finding class %s\n", name);
         return (jclass) 5;
@@ -65,23 +46,6 @@ extern "C" {
         return (jmethodID) 5;
     }
 
-    jobject JNIEnv_NewDirectByteBuffer(JNIEnv* env, void* address, jlong capacity) {
-        jdbb* created = (jdbb*) malloc(sizeof(jdbb));
-        created->ptr = (uint8_t*) address;
-        created->len = (int) capacity;
-        return (jobject) created;
-    }
-
-    void* JNIEnv_GetDirectBufferAddress(JNIEnv* env, jobject buf) {
-        jdbb* actual = (jdbb*) buf;
-        return (void*) actual->ptr;
-    }
-
-    jlong JNIEnv_GetDirectBufferCapacity(JNIEnv* env, jobject buf) {
-        jdbb* actual = (jdbb*) buf;
-        return (jlong) actual->len;
-    }
-
     JNIEnv* createEnv(jstring (JNICALL *JNIEnv_NewString) (JNIEnv *env, const jchar *unicode, jsize len),
                       jsize (JNICALL *JNIEnv_GetStringLength) (JNIEnv *env, jstring str),
                       const jchar * (JNICALL *JNIEnv_GetStringCritical) (JNIEnv *env, jstring string, jboolean *isCopy),
@@ -89,7 +53,11 @@ extern "C" {
 
                       void (JNICALL *JNIEnv_SetShortArrayRegion) (JNIEnv *env, jshortArray array, jsize start, jsize len, const jshort *buf),
                       void (JNICALL *JNIEnv_SetFloatArrayRegion) (JNIEnv *env, jfloatArray array, jsize start, jsize len, const jfloat *buf),
-                      jsize (JNICALL *JNIEnv_GetArrayLength) (JNIEnv *env, jarray array)) {
+                      jsize (JNICALL *JNIEnv_GetArrayLength) (JNIEnv *env, jarray array),
+
+                      jobject (JNICALL *JNIEnv_NewDirectByteBuffer) (JNIEnv* env, void* address, jlong capacity),
+                      void* (JNICALL *JNIEnv_GetDirectBufferAddress) (JNIEnv* env, jobject buf),
+                      jlong (JNICALL *JNIEnv_GetDirectBufferCapacity) (JNIEnv* env, jobject buf)) {
         struct JNINativeInterface_ * env = (struct JNINativeInterface_ *) malloc(sizeof(struct JNINativeInterface_));
         env->FindClass = JNIEnv_FindClass;
         env->NewGlobalRef = JNIEnv_NewGlobalRef;
@@ -99,10 +67,6 @@ extern "C" {
         env->ThrowNew = JNIEnv_ThrowNew;
         env->GetMethodID = JNIEnv_GetMethodID;
 
-        env->NewDirectByteBuffer = JNIEnv_NewDirectByteBuffer;
-        env->GetDirectBufferAddress = JNIEnv_GetDirectBufferAddress;
-        env->GetDirectBufferCapacity = JNIEnv_GetDirectBufferCapacity;
-
         env->NewString = JNIEnv_NewString;
         env->GetStringLength = JNIEnv_GetStringLength;
         env->GetStringCritical = JNIEnv_GetStringCritical;
@@ -111,6 +75,10 @@ extern "C" {
         env->SetShortArrayRegion = JNIEnv_SetShortArrayRegion;
         env->SetFloatArrayRegion = JNIEnv_SetFloatArrayRegion;
         env->GetArrayLength = JNIEnv_GetArrayLength;
+
+        env->NewDirectByteBuffer = JNIEnv_NewDirectByteBuffer;
+        env->GetDirectBufferAddress = JNIEnv_GetDirectBufferAddress;
+        env->GetDirectBufferCapacity = JNIEnv_GetDirectBufferCapacity;
 
         void** ptr = (void**) malloc(sizeof(void*));
         *ptr = env;
@@ -135,8 +103,11 @@ extern "C" {
         return (JavaVM*) ptr;
     }
 
-    void testVM(JavaVM *vm, JNIEnv* env) {
-        printf("initing\n");
+    void testVM(JavaVM *vm, JNIEnv* env, jobject buf) {
+        printf("initing %p %lld\n", env->GetDirectBufferAddress(buf), env->GetDirectBufferCapacity(buf));
+        uint8_t *data = (uint8_t *) env->GetDirectBufferAddress(buf);
+        data[0] = 5;
+        data[1] = 7;
         //Java_edu_wpi_first_wpilibj_hal_PWMJNI_initializePWMPort(env, NULL, (jint) 33554688);
     }
 }

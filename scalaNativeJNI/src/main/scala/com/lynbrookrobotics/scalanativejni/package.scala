@@ -59,6 +59,10 @@ package object scalanativejni {
     }
   }
 
+  def newDirectByteBuffer(env: Env, address: Ptr[Byte], capacity: Long): ByteBuffer = {
+    DirectBufferAccess.createFromPointer(address, capacity.toInt)
+  }
+
   val env: Env = MockJNI.createEnv(
     (env: Env, nativeString: CString, length: Int) => {
       newString(env, nativeString, length)
@@ -66,6 +70,7 @@ package object scalanativejni {
     (env: Env, str: String) => str.length,
     (env: Env, str: String) => getStringCritical(env, str),
     (env: Env, str: String, cStr: Ptr[Byte]) => stdlib.free(cStr),
+
     (env: Env, to: Array[Short], start: Int, len: Int, buf: Ptr[Short]) => {
       setShortArrayRegion(env, to, start, len, buf)
     },
@@ -74,6 +79,16 @@ package object scalanativejni {
     },
     (env: Env, arr: Array[_]) => {
       arr.length
+    },
+
+    (env: Env, address: Ptr[Byte], capacity: Long) => {
+      newDirectByteBuffer(env, address, capacity)
+    },
+    (env: Env, buffer: ByteBuffer) => {
+      DirectBufferAccess.getAttachment(buffer).cast[Ptr[Byte]]
+    },
+    (env: Env, buffer: ByteBuffer) => {
+      buffer.capacity().toLong
     }
   )
 
@@ -88,26 +103,15 @@ package object scalanativejni {
                   getStringLength: CFunctionPtr2[Env, String, Int],
                   getStringCritical: CFunctionPtr2[Env, String, Ptr[Byte]],
                   releaseStringCritical: CFunctionPtr3[Env, String, Ptr[Byte], Unit],
+
                   setShortArrayRegion: CFunctionPtr5[Env, Array[Short], Int, Int, Ptr[Short], Unit],
                   setFloatArrayRegion: CFunctionPtr5[Env, Array[Float], Int, Int, Ptr[Float], Unit],
-                  getArrayLength: CFunctionPtr2[Env, Array[_], Int]): Env = extern
+                  getArrayLength: CFunctionPtr2[Env, Array[_], Int],
+
+                  newDirectByteBuffer: CFunctionPtr3[Env, Ptr[Byte], Long, ByteBuffer],
+                  getDirectBufferAddress: CFunctionPtr2[Env, ByteBuffer, Ptr[Byte]],
+                  getDirectBufferCapacity: CFunctionPtr2[Env, ByteBuffer, Long]): Env = extern
     def createVM(env: Env): VM = extern
-    def testVM(vm: VM, env: Env): Unit = extern
-  }
-
-  type JDirectByteBuffer = Ptr[CStruct2[Ptr[Byte], Int]]
-
-  def byteBuffer2JDirectByteBuffer(bb: ByteBuffer): JDirectByteBuffer = {
-    assert(bb.isDirect)
-    val dbb = stdlib.malloc(sizeof[CStruct2[Ptr[Byte], Int]]).asInstanceOf[JDirectByteBuffer]
-    !dbb._1 = DirectBufferAccess.getAttachment(bb).cast[Ptr[Byte]]
-    !dbb._2 = bb.capacity()
-    dbb
-  }
-
-  def jDirectByteBuffer2ByteBuffer(dbb: JDirectByteBuffer): ByteBuffer = {
-    val ret = DirectBufferAccess.createFromPointer(!dbb._1, !dbb._2)
-    stdlib.free(dbb.asInstanceOf[Ptr[Byte]])
-    ret
+    def testVM(vm: VM, env: Env, buf: ByteBuffer): Unit = extern
   }
 }
