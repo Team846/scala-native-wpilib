@@ -21,24 +21,18 @@ import edu.wpi.first.wpilibj.hal.PWMJNI
   * @param channel The PWM channel number. 0-9 are on-board, 10-19 are on the MXP port
   */
 class PWM(channel: Int) extends SensorBase /*with LiveWindowSendable*/ {
-  import SensorBase._
-  println("checking pwm channel")
+  import SensorBase._ // Shadaj: "extending doesn't bring companion object members into scope like it does for statics"
 
   checkPWMChannel(channel)
   private var m_channel = channel
 
   private var m_handle = PWMJNI.initializePWMPort(DIOJNI.getPort(m_channel.toByte))
 
-  println("setting disabled")
   setDisabled()
 
-  println("enabling deadband")
   PWMJNI.setPWMEliminateDeadband(m_handle, false)
 
-  println("reporting")
   HAL.report(tResourceType.kResourceType_PWM, m_channel)
-
-  println("reported!")
 
   /**
     * Free the PWM channel.

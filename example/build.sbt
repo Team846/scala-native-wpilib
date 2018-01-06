@@ -18,74 +18,74 @@ scalacOptions ++= Seq("-target:jvm-1.8")
 
 val crossCompileSettings = if (true) {
   Seq(
-    nativeCompileLib in Compile := {
-      val linked    = (nativeLinkNIR in Compile).value
-      val cwd       = (nativeWorkdir in Compile).value
-      val clang     = nativeClang.value
-      val clangpp   = nativeClangPP.value
-      val gc        = nativeGC.value
-      val opts      = "-O2" +: nativeCompileOptions.value
-      val logger    = streams.value.log
-      val nativelib = (nativeUnpackLib in Compile).value
-      val cpaths    = (cwd ** "*.c").get.map(_.abs)
-      val cpppaths  = (cwd ** "*.cpp").get.map(_.abs)
-      val paths     = cpaths ++ cpppaths ++ (file("custom-c") ** "*.cpp").get.map(_.abs)
-
-      (file("custom-c") ** "*.o").get.foreach(_.delete())
-
-      // predicate to check if given file path shall be compiled
-      // we only include sources of the current gc and exclude
-      // all optional dependencies if they are not necessary
-      val sep       = java.io.File.separator
-      val libPath   = crossTarget.value + sep + "native" + sep + "lib"
-      val optPath   = libPath + sep + "optional"
-      val gcPath    = libPath + sep + "gc"
-      val gcSelPath = gcPath + sep + gc
-
-      def include(path: String) = {
-        if (path.contains(optPath)) {
-          val name = file(path).getName.split("\\.").head
-          linked.links.map(_.name).contains(name)
-        } else if (path.contains(gcPath)) {
-          path.contains(gcSelPath)
-        } else {
-          true
-        }
-      }
-
-      // delete .o files for all excluded source files
-      paths.foreach { path =>
-        if (!include(path)) {
-          val ofile = file(path + ".o")
-          if (ofile.exists) {
-            IO.delete(ofile)
-          }
-        }
-      }
-
-      // generate .o files for all included source files in parallel
-      paths.par.foreach {
-        path =>
-          val opath = path + ".o"
-          if (include(path) && !file(opath).exists) {
-            val isCpp    = path.endsWith(".cpp")
-            val compiler = if (isCpp) clangpp.abs else clang.abs
-            val flags    = (if (isCpp) Seq("-std=c++11") else Seq()) ++ opts
-            val compilec = Seq(compiler) ++ flags ++ Seq("-c",
-              path,
-              "-o",
-              opath)
-
-            logger.running(compilec)
-            val result = Process(compilec, cwd) ! logger
-            if (result != 0) {
-              sys.error("Failed to compile native library runtime code.")
-            }
-          }
-      }
-
-      nativelib
-    },
+//    nativeCompileLib in Compile := {
+//      val linked    = (nativeLinkNIR in Compile).value
+//      val cwd       = (nativeWorkdir in Compile).value
+//      val clang     = nativeClang.value
+//      val clangpp   = nativeClangPP.value
+//      val gc        = nativeGC.value
+//      val opts      = "-O2" +: nativeCompileOptions.value
+//      val logger    = streams.value.log
+//      val nativelib = (nativeUnpackLib in Compile).value
+//      val cpaths    = (cwd ** "*.c").get.map(_.abs)
+//      val cpppaths  = (cwd ** "*.cpp").get.map(_.abs)
+//      val paths     = cpaths ++ cpppaths ++ (file("custom-c") ** "*.cpp").get.map(_.abs)
+//
+//      (file("custom-c") ** "*.o").get.foreach(_.delete())
+//
+//      // predicate to check if given file path shall be compiled
+//      // we only include sources of the current gc and exclude
+//      // all optional dependencies if they are not necessary
+//      val sep       = java.io.File.separator
+//      val libPath   = crossTarget.value + sep + "native" + sep + "lib"
+//      val optPath   = libPath + sep + "optional"
+//      val gcPath    = libPath + sep + "gc"
+//      val gcSelPath = gcPath + sep + gc
+//
+//      def include(path: String) = {
+//        if (path.contains(optPath)) {
+//          val name = file(path).getName.split("\\.").head
+//          linked.links.map(_.name).contains(name)
+//        } else if (path.contains(gcPath)) {
+//          path.contains(gcSelPath)
+//        } else {
+//          true
+//        }
+//      }
+//
+//      // delete .o files for all excluded source files
+//      paths.foreach { path =>
+//        if (!include(path)) {
+//          val ofile = file(path + ".o")
+//          if (ofile.exists) {
+//            IO.delete(ofile)
+//          }
+//        }
+//      }
+//
+//      // generate .o files for all included source files in parallel
+//      paths.par.foreach {
+//        path =>
+//          val opath = path + ".o"
+//          if (include(path) && !file(opath).exists) {
+//            val isCpp    = path.endsWith(".cpp")
+//            val compiler = if (isCpp) clangpp.abs else clang.abs
+//            val flags    = (if (isCpp) Seq("-std=c++11") else Seq()) ++ opts
+//            val compilec = Seq(compiler) ++ flags ++ Seq("-c",
+//              path,
+//              "-o",
+//              opath)
+//
+//            logger.running(compilec)
+//            val result = Process(compilec, cwd) ! logger
+//            if (result != 0) {
+//              sys.error("Failed to compile native library runtime code.")
+//            }
+//          }
+//      }
+//
+//      nativelib
+//    },
     // fork to link with gcc instead of clang
     nativeLinkLL in Compile := {
       val linked      = (nativeLinkNIR in Compile).value

@@ -11,7 +11,7 @@ package edu.wpi.first.wpilibj.hal
 import com.lynbrookrobotics.scalanativejni._
 
 @jnilib("wpilibJavaJNI")
-object PowerJNI {
+object PowerJNI extends JNIWrapper {
   def getVinVoltage: Double = jni
 
   def getVinCurrent: Double = jni

@@ -12,7 +12,7 @@ import com.lynbrookrobotics.scalanativejni._
 import scala.scalanative.native.{Ptr, extern, link, name}
 
 @jnilib("wpilibJavaJNI")
-object HALUtil {
+object HALUtil extends JNIWrapper {
   val NULL_PARAMETER: Int = -1005
   val SAMPLE_RATE_TOO_HIGH = 1001
   val VOLTAGE_OUT_OF_RANGE = 1002

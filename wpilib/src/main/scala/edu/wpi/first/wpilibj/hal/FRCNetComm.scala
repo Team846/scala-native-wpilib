@@ -10,7 +10,7 @@ package edu.wpi.first.wpilibj.hal
 /**
   * JNI wrapper for library <b>FRC_NetworkCommunication</b><br>.
   */
-object FRCNetComm {
+object FRCNetComm extends JNIWrapper {
   /**
     * Module type from LoadOut.h
     */

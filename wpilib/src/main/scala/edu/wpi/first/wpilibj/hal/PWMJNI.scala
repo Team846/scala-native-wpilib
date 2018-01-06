@@ -13,7 +13,7 @@ import com.lynbrookrobotics.scalanativejni._
 
 @SuppressWarnings(Array("AbbreviationAsWordInName"))
 @jnilib("wpilibJavaJNI")
-object PWMJNI {
+object PWMJNI extends JNIWrapper {
   def initializePWMPort(halPortHandle: Int): Int = jni
 
   def checkPWMChannel(channel: Int): Boolean = jni

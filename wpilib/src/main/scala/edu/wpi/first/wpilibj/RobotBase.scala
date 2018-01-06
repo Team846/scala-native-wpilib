@@ -100,13 +100,14 @@ abstract class RobotBase {
     */
   def startCompetition(): Unit
 
+  // moved out to run before robot constructor
+  RobotBase.initializeHardwareConfiguration()
+  HAL.report(tResourceType.kResourceType_Language, tInstances.kLanguage_Java, 0, "")
+
   /**
     * Starting point for the applications.
     */
   def main(args: Array[String]): Unit = {
-    RobotBase.initializeHardwareConfiguration()
-    HAL.report(tResourceType.kResourceType_Language, tInstances.kLanguage_Java, 0, "")
-
     val robot = this
 
     try {
