@@ -4,6 +4,8 @@ import com.lynbrookrobotics.scalanativejni._
 
 @jnilib("wpilibJavaJNI")
 class JNIWrapper {
+  registerClass(autoClass[RuntimeException])
+
   if (!JNIWrapper.hasLoaded) {
     JNILoad.JNI_OnLoad(vm, null)
     JNIWrapper.hasLoaded = true

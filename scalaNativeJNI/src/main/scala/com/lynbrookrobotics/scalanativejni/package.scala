@@ -3,6 +3,7 @@ package com.lynbrookrobotics
 import java.nio.{ByteBuffer, DirectBufferAccess}
 import java.nio.charset.Charset
 
+import scala.collection.mutable
 import scala.scalanative.native._
 import scala.language.experimental.macros
 
@@ -15,6 +16,18 @@ package object scalanativejni {
 
   class _cls
   type Cls = Ptr[_cls]
+
+  case class JClass(name: String, methods: Map[(String, String), JMethodID])
+  abstract class JMethodID {
+    def run(args: Ptr[Byte]): Any
+  }
+
+  private val knownClasses = mutable.Map[String, JClass]()
+  def registerClass(cls: JClass): Unit = {
+    knownClasses(cls.name) = cls
+  }
+
+  def autoClass[T]: JClass = macro JNIMacrosImpl.autoClassImpl[T]
 
   def newString(env: Env, cstr: CString, len: Int): String = {
     val bytesCount = len * 2
@@ -63,7 +76,60 @@ package object scalanativejni {
     DirectBufferAccess.createFromPointer(address, capacity.toInt)
   }
 
+  def findClass(env: Env, cname: CString): JClass = {
+    val name = fromCString(cname)
+    knownClasses.getOrElse(
+      name,
+      {
+        println(s"WARNING: Stubbing JClass for $name")
+        JClass(name, Map.empty)
+      }
+    )
+  }
+
+  def getMethodID(env: Env, clazz: JClass, cname: CString, csig: CString): JMethodID = {
+    val name = fromCString(cname)
+    val sig = fromCString(csig)
+
+    clazz.methods.getOrElse(
+      (name, sig),
+      {
+        println(s"WARNING Stubbing JMethodID for method $name with signature $sig in class $clazz")
+        new JMethodID() {
+          override def run(args: Ptr[Byte]): Any = null
+        }
+      }
+    )
+  }
+
   val env: Env = MockJNI.createEnv(
+    findClass = (env: Env, cname: CString) => {
+      findClass(env, cname)
+    },
+    newGlobalRef = (env: Env, obj: Object) => {
+      println(s"creating new $obj global ref")
+      obj
+    },
+    deleteLocalRef = (env: Env, obj: Object) => {
+      println(s"deleting $obj local ref")
+    },
+    deleteGlobalRef = (env: Env, obj: Object) => {
+      println(s"deleting $obj global ref")
+    },
+    newObjectV = (env: Env, cls: JClass, constructor: JMethodID, args: Ptr[Byte]) => {
+      constructor.run(args).asInstanceOf[Object]
+    },
+    getMethodID = (env: Env, clazz: JClass, name: CString, sig: CString) => {
+      getMethodID(env, clazz, name, sig)
+    },
+
+    _throw = (env: Env, obj: Throwable) => {
+      throw obj
+    },
+    throwNew = (env: Env, cls: JClass, msg: CString) => {
+      throw getMethodID(env, cls, c"<init>", c"").run(msg.cast[Ptr[Byte]]).asInstanceOf[Throwable]
+    },
+
     (env: Env, nativeString: CString, length: Int) => {
       newString(env, nativeString, length)
     },
@@ -99,7 +165,17 @@ package object scalanativejni {
 
   @extern
   object MockJNI {
-    def createEnv(newString: CFunctionPtr3[Env, CString, Int, String],
+    def createEnv(findClass: CFunctionPtr2[Env, CString, JClass],
+                  newGlobalRef: CFunctionPtr2[Env, Object, Object],
+                  deleteLocalRef: CFunctionPtr2[Env, Object, Unit],
+                  deleteGlobalRef: CFunctionPtr2[Env, Object, Unit],
+                  newObjectV: CFunctionPtr4[Env, JClass, JMethodID, Ptr[Byte], Object],
+                  getMethodID: CFunctionPtr4[Env, JClass, CString, CString, JMethodID],
+
+                  _throw: CFunctionPtr2[Env, Throwable, Int],
+                  throwNew: CFunctionPtr3[Env, JClass, CString, Int],
+
+                  newString: CFunctionPtr3[Env, CString, Int, String],
                   getStringLength: CFunctionPtr2[Env, String, Int],
                   getStringCritical: CFunctionPtr2[Env, String, Ptr[Byte]],
                   releaseStringCritical: CFunctionPtr3[Env, String, Ptr[Byte], Unit],

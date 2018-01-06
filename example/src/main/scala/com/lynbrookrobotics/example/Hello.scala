@@ -2,7 +2,7 @@ package com.lynbrookrobotics.example
 
 import java.nio.ByteBuffer
 
-import edu.wpi.first.wpilibj.hal.{HAL, HALUtil}
+import edu.wpi.first.wpilibj.hal.{HAL, HALUtil, PWMJNI}
 import edu.wpi.first.wpilibj.{IterativeRobot, Servo, Timer}
 
 object Hello extends IterativeRobot {
@@ -14,6 +14,8 @@ object Hello extends IterativeRobot {
   println(buf.get(0), buf.get(1))
 
   println(HALUtil.getHALErrorMessage(1001))
+
+//  println(PWMJNI.initializePWMPort(-1))
 
   override def teleopPeriodic(): Unit = {
     pwm.setPosition(math.abs(math.sin(Timer.getFPGATimestamp)))

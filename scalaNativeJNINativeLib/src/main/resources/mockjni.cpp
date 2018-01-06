@@ -11,42 +11,17 @@ using namespace frc;
 using namespace wpi::java;
 
 extern "C" {
-    jclass JNIEnv_FindClass(JNIEnv *thiz, const char *name) {
-//        fprintf(stderr, "finding class %s\n", name);
-        return (jclass) 5;
-    }
+    JNIEnv* createEnv(jclass (JNICALL *JNIEnv_FindClass) (JNIEnv *env, const char *name),
+                      jobject (JNICALL *JNIEnv_NewGlobalRef) (JNIEnv *env, jobject lobj),
+                      void (JNICALL *JNIEnv_DeleteLocalRef) (JNIEnv *env, jobject obj),
+                      void (JNICALL *JNIEnv_DeleteGlobalRef) (JNIEnv *env, jobject gref),
+                      jobject (JNICALL *JNIEnv_NewObjectV) (JNIEnv *env, jclass clazz, jmethodID methodID, va_list args),
+                      jmethodID (JNICALL *JNIEnv_GetMethodID) (JNIEnv *env, jclass clazz, const char *name, const char *sig),
 
-    jobject JNIEnv_NewGlobalRef(JNIEnv *env, jobject lobj) {
-//        fprintf(stderr, "NEW GLOBAL REF\n");
-        return (jobject) 7;
-    }
+                      jint (JNICALL *JNIEnv_Throw) (JNIEnv *env, jthrowable obj),
+                      jint (JNICALL *JNIEnv_ThrowNew) (JNIEnv *env, jclass clazz, const char *msg),
 
-    void JNIEnv_DeleteLocalRef(JNIEnv *env, jobject lobj) {
-//        fprintf(stderr, "DELETE LOCAL REF\n");
-    }
-
-    void JNIEnv_DeleteGlobalRef(JNIEnv *env, jobject lobj) {
-//        fprintf(stderr, "DELETE GLOBAL REF\n");
-    }
-
-    jobject JNIEnv_NewObject(JNIEnv *thiz, jclass cls, jmethodID constructor, ...) {
-        fprintf(stderr, "in newObjectV!\n");
-//        char* arg = va_arg(args, char*);
-//        fprintf(stderr, "")
-        return NULL;
-    }
-
-    jint JNIEnv_ThrowNew(JNIEnv *env, jclass clazz, const char *msg) {
-//        fprintf(stderr, "HTORLKWJ\n");
-        return 0;
-    }
-
-    jmethodID JNIEnv_GetMethodID(JNIEnv *env, jclass clazz, const char *name, const char *sig) {
-//        fprintf(stderr, "GETMETHODID!\n");
-        return (jmethodID) 5;
-    }
-
-    JNIEnv* createEnv(jstring (JNICALL *JNIEnv_NewString) (JNIEnv *env, const jchar *unicode, jsize len),
+                      jstring (JNICALL *JNIEnv_NewString) (JNIEnv *env, const jchar *unicode, jsize len),
                       jsize (JNICALL *JNIEnv_GetStringLength) (JNIEnv *env, jstring str),
                       const jchar * (JNICALL *JNIEnv_GetStringCritical) (JNIEnv *env, jstring string, jboolean *isCopy),
                       void (JNICALL *JNIEnv_ReleaseStringCritical) (JNIEnv *env, jstring string, const jchar *cstring),
@@ -61,11 +36,13 @@ extern "C" {
         struct JNINativeInterface_ * env = (struct JNINativeInterface_ *) malloc(sizeof(struct JNINativeInterface_));
         env->FindClass = JNIEnv_FindClass;
         env->NewGlobalRef = JNIEnv_NewGlobalRef;
-        env->DeleteGlobalRef = JNIEnv_DeleteGlobalRef;
         env->DeleteLocalRef = JNIEnv_DeleteLocalRef;
-        env->NewObject = JNIEnv_NewObject;
-        env->ThrowNew = JNIEnv_ThrowNew;
+        env->DeleteGlobalRef = JNIEnv_DeleteGlobalRef;
+        env->NewObjectV = JNIEnv_NewObjectV;
         env->GetMethodID = JNIEnv_GetMethodID;
+
+        env->Throw = JNIEnv_Throw;
+        env->ThrowNew = JNIEnv_ThrowNew;
 
         env->NewString = JNIEnv_NewString;
         env->GetStringLength = JNIEnv_GetStringLength;
@@ -104,10 +81,16 @@ extern "C" {
     }
 
     void testVM(JavaVM *vm, JNIEnv* env, jobject buf) {
-        printf("initing %p %lld\n", env->GetDirectBufferAddress(buf), env->GetDirectBufferCapacity(buf));
-        uint8_t *data = (uint8_t *) env->GetDirectBufferAddress(buf);
-        data[0] = 5;
-        data[1] = 7;
+        printf("hello!\n");
+//        env->NewObject((jclass) 5, (jmethodID) 5, "foobar");
+        JException foo = JException(env, "java/lang/RuntimeException");
+        printf("created exception!\n");
+        foo.Throw(env, "hallo");
+
+//        printf("initing %p %lld\n", env->GetDirectBufferAddress(buf), env->GetDirectBufferCapacity(buf));
+//        uint8_t *data = (uint8_t *) env->GetDirectBufferAddress(buf);
+//        data[0] = 5;
+//        data[1] = 7;
         //Java_edu_wpi_first_wpilibj_hal_PWMJNI_initializePWMPort(env, NULL, (jint) 33554688);
     }
 }
