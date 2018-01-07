@@ -20,6 +20,7 @@ package object scalanativejni {
   case class JClass(name: String, methods: Map[(String, String), JMethodID])
   abstract class JMethodID {
     def run(args: Ptr[Byte]): Any
+    def runOn(obj: Object, args: Ptr[Byte]): Any
   }
 
   private val knownClasses = mutable.Map[String, JClass]()
@@ -96,10 +97,22 @@ package object scalanativejni {
       {
         println(s"WARNING Stubbing JMethodID for method $name with signature $sig in class $clazz")
         new JMethodID() {
-          override def run(args: Ptr[Byte]): Any = null
+          override def run(args: Ptr[Byte]): Ptr[Byte] = null
+          override def runOn(obj: Object, args: Ptr[CSignedChar]): Ptr[Byte] = null
         }
       }
     )
+  }
+
+  private var globalRefs = List[Object]()
+
+  def newGlobalRef(env: Env, obj: Object): Object = {
+    globalRefs = obj :: globalRefs
+    obj
+  }
+
+  def deleteGlobalRef(env: Env, obj: Object): Unit = {
+    globalRefs = globalRefs.filterNot(_ eq obj)
   }
 
   val env: Env = MockJNI.createEnv(
@@ -107,17 +120,18 @@ package object scalanativejni {
       findClass(env, cname)
     },
     newGlobalRef = (env: Env, obj: Object) => {
-      println(s"creating new $obj global ref")
-      obj
+      newGlobalRef(env, obj)
     },
     deleteLocalRef = (env: Env, obj: Object) => {
-      println(s"deleting $obj local ref")
     },
     deleteGlobalRef = (env: Env, obj: Object) => {
-      println(s"deleting $obj global ref")
+      deleteGlobalRef(env, obj)
     },
     newObjectV = (env: Env, cls: JClass, constructor: JMethodID, args: Ptr[Byte]) => {
-      constructor.run(args).asInstanceOf[Object]
+      constructor.run(args)
+    },
+    callMethodV = (env: Env, obj: Object, method: JMethodID, args: Ptr[Byte]) => {
+      method.runOn(obj, args)
     },
     getMethodID = (env: Env, clazz: JClass, name: CString, sig: CString) => {
       getMethodID(env, clazz, name, sig)
@@ -169,7 +183,8 @@ package object scalanativejni {
                   newGlobalRef: CFunctionPtr2[Env, Object, Object],
                   deleteLocalRef: CFunctionPtr2[Env, Object, Unit],
                   deleteGlobalRef: CFunctionPtr2[Env, Object, Unit],
-                  newObjectV: CFunctionPtr4[Env, JClass, JMethodID, Ptr[Byte], Object],
+                  newObjectV: CFunctionPtr4[Env, JClass, JMethodID, Ptr[Byte], Any],
+                  callMethodV: CFunctionPtr4[Env, Object, JMethodID, Ptr[Byte], Any],
                   getMethodID: CFunctionPtr4[Env, JClass, CString, CString, JMethodID],
 
                   _throw: CFunctionPtr2[Env, Throwable, Int],

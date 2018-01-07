@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) FIRST 2008-2017. All Rights Reserved.                        */
+/* Copyright (c) 2008-2018 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -11,35 +11,28 @@ import edu.wpi.first.wpilibj.hal.DIOJNI
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tResourceType
 import edu.wpi.first.wpilibj.hal.HAL
 import edu.wpi.first.wpilibj.hal.PWMJNI
-//import edu.wpi.first.wpilibj.livewindow.LiveWindowSendable
-//import edu.wpi.first.wpilibj.tables.ITable
-//import edu.wpi.first.wpilibj.tables.ITableListener
+//import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder
 
 /**
   * Allocate a PWM given a channel.
   *
   * @param channel The PWM channel number. 0-9 are on-board, 10-19 are on the MXP port
   */
-class PWM(channel: Int) extends SensorBase /*with LiveWindowSendable*/ {
-  import SensorBase._ // Shadaj: "extending doesn't bring companion object members into scope like it does for statics"
-
-  checkPWMChannel(channel)
-  private var m_channel = channel
-
+class PWM(var m_channel: Int)/* extends SendableBase with Sendable*/ {
+  SensorBase.checkPWMChannel(m_channel)
   private var m_handle = PWMJNI.initializePWMPort(DIOJNI.getPort(m_channel.toByte))
-
   setDisabled()
-
   PWMJNI.setPWMEliminateDeadband(m_handle, false)
-
   HAL.report(tResourceType.kResourceType_PWM, m_channel)
+//  setName("PWM", m_channel)
 
   /**
     * Free the PWM channel.
     *
     * <p>Free the resource associated with the PWM channel and set the value to 0.
     */
-  override def free(): Unit = {
+  def free(): Unit = {
+//    super.free
     if (m_handle == 0) return
     setDisabled()
     PWMJNI.freePWMPort(m_handle)
@@ -58,23 +51,6 @@ class PWM(channel: Int) extends SensorBase /*with LiveWindowSendable*/ {
   }
 
   /**
-    * Set the bounds on the PWM values. This sets the bounds on the PWM values for a particular each
-    * type of controller. The values determine the upper and lower speeds as well as the deadband
-    * bracket.
-    *
-    * @param max         The Minimum pwm value
-    * @param deadbandMax The high end of the deadband range
-    * @param center      The center speed (off)
-    * @param deadbandMin The low end of the deadband range
-    * @param min         The minimum pwm value
-    * @deprecated Recommended to set bounds in ms using { @link
-  }
-    */
-  @deprecated def setRawBounds(max: Int, deadbandMax: Int, center: Int, deadbandMin: Int, min: Int): Unit = {
-    PWMJNI.setPWMConfigRaw(m_handle, max, deadbandMax, center, deadbandMin, min)
-  }
-
-  /**
     * Set the bounds on the PWM pulse widths. This sets the bounds on the PWM values for a particular
     * type of controller. The values determine the upper and lower speeds as well as the deadband
     * bracket.
@@ -89,13 +65,12 @@ class PWM(channel: Int) extends SensorBase /*with LiveWindowSendable*/ {
     PWMJNI.setPWMConfig(m_handle, max, deadbandMax, center, deadbandMin, min)
   }
 
-//  /**
-//    * Gets the bounds on the PWM pulse widths. This Gets the bounds on the PWM values for a
-//    * particular type of controller. The values determine the upper and lower speeds as well
-//    * as the deadband bracket.
-//    */
-//  def getRawBounds: PWMConfigDataResult = PWMJNI.getPWMConfigRaw(m_handle)
-  // Shadaj: "creating objects in JNI, oh dear"
+  /**
+    * Gets the bounds on the PWM pulse widths. This Gets the bounds on the PWM values for a
+    * particular type of controller. The values determine the upper and lower speeds as well
+    * as the deadband bracket.
+    */
+  def getRawBounds: PWMConfigDataResult = PWMJNI.getPWMConfigRaw(m_handle)
 
   /**
     * Gets the channel number associated with the PWM Object.
@@ -209,49 +184,20 @@ class PWM(channel: Int) extends SensorBase /*with LiveWindowSendable*/ {
     PWMJNI.latchPWMZero(m_handle)
   }
 
-//  /*
-//   * Live Window code, only does anything if live window is activated.
-//   */
-//  def getSmartDashboardType = "Speed Controller"
-//
-//  private var m_table = null
-//  private var m_tableListener = null
-//
-//  def initTable(subtable: Nothing): Unit = {
-//    m_table = subtable
-//    updateTable()
-//  }
-//
-//  def updateTable(): Unit = {
-//    if (m_table != null) m_table.putNumber("Value", getSpeed)
-//  }
-//
-//  def getTable: Nothing = m_table
-//
-//  def startLiveWindowMode(): Unit = {
-//    setSpeed(0) // Stop for safety
-//
-//    m_tableListener = new Nothing() {
-//      def valueChanged(itable: Nothing, key: String, value: Any, bln: Boolean): Unit = {
-//        setSpeed(value.asInstanceOf[Double])
-//      }
-//    }
-//    m_table.addTableListener("Value", m_tableListener, true)
-//  }
-//
-//  def stopLiveWindowMode(): Unit = {
-//    setSpeed(0)
-//    // TODO: Broken, should only remove the listener from "Value" only.
-//    m_table.removeTableListener(m_tableListener)
+//  def initSendable(builder: SendableBuilder): Unit = {
+//    builder.setSmartDashboardType("Speed Controller")
+//    builder.setSafeState(this.setDisabled)
+//    builder.addDoubleProperty("Value", this.getSpeed, this.setSpeed)
 //  }
 }
+
 
 /**
   * Class implements the PWM generation in the FPGA.
   *
   * <p>The values supplied as arguments for PWM outputs range from -1.0 to 1.0. They are mapped to
   * the hardware dependent values, in this case 0-2000 for the FPGA. Changes are immediately sent to
-  * the FPGA, and the update occurs at the next FPGA cycle. There is no delay.
+  * the FPGA, and the update occurs at the next FPGA cycle (5.005ms). There is no delay.
   *
   * <p>As of revision 0.1.10 of the FPGA, the FPGA interprets the 0-2000 values as follows: - 2000 =
   * maximum pulse width - 1999 to 1001 = linear scaling from "full forward" to "center" - 1000 =
@@ -259,25 +205,27 @@ class PWM(channel: Int) extends SensorBase /*with LiveWindowSendable*/ {
   * width (currently .5ms) - 0 = disabled (i.e. PWM output is held low)
   */
 object PWM {
+  type PeriodMultiplier = PeriodMultiplier.Value
   /**
     * Represents the amount to multiply the minimum servo-pulse pwm period by.
     */
-  sealed trait PeriodMultiplier
-
-  object PeriodMultiplier {
-    /**
-      * Period Multiplier: don't skip pulses.
-      */
-    case object k1X extends PeriodMultiplier
+  object PeriodMultiplier extends Enumeration {
+    val
 
     /**
-      * Period Multiplier: skip every other pulse.
+      * Period Multiplier: don't skip pulses. PWM pulses occur every 5.005 ms
       */
-    case object k2X extends PeriodMultiplier
+    k1X,
 
     /**
-      * Period Multiplier: skip three out of four pulses.
+      * Period Multiplier: skip every other pulse. PWM pulses occur every 10.010 ms
       */
-    case object k4X extends PeriodMultiplier
+    k2X,
+
+    /**
+      * Period Multiplier: skip three out of four pulses. PWM pulses occur every 20.020 ms
+      */
+    k4X = Value
   }
+
 }

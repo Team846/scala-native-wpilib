@@ -106,18 +106,18 @@ val crossCompileSettings = if (true) {
     nativeCompileOptions ++= Seq(
       "-funwind-tables", "-target", "armv7-frc-linux-gnueabi", "-Wno-override-module", "--sysroot=/usr/local/arm-frc-linux-gnueabi",
       s"-I${(libunwindFolder / "include").abs}", s"-I${(librtFolder / "include").abs}", s"-I${(boehmFolder / "include").abs}",
-      "-I/usr/local/arm-frc-linux-gnueabi/include/c++/4.9.3", "-I/usr/local/arm-frc-linux-gnueabi/include/c++/4.9.3/arm-frc-linux-gnueabi",
-      "-I/Users/shadaj/external-dev/allwpilib/wpilibj/src/athena/cpp/lib",
-      "-I/Users/shadaj/external-dev/allwpilib/wpilibj/src/athena/cpp/include",
-      "-I/Users/shadaj/external-dev/allwpilib/wpilibj/src/athena/cpp/include/linux",
+      "-I/usr/local/arm-frc-linux-gnueabi/include/c++/5.5.0", "-I/usr/local/arm-frc-linux-gnueabi/include/c++/5.5.0/arm-frc-linux-gnueabi",
+      "-I/Users/shadaj/external-dev/allwpilib/wpilibj/src/arm-linux-jni",
+      "-I/Users/shadaj/external-dev/allwpilib/wpilibj/src/arm-linux-jni/linux",
       "-I/Users/shadaj/wpilib/cpp/current/include"
     ),
     nativeLinkingOptions ++= Seq(
-      "-lm", "-lc", "-lstdc++", "-lpthread", // system stuff
-      "-lHALAthena", "-lspi", "-lFRC_NetworkCommunication", "-lRoboRIO_FRC_ChipObject", "-lwpiutil", // wpilib stuff
-      "-li2c", "-lvisa", "-lMathParser_gcc-4.4-arm_v3_0_NI", "-lNiFpgaLv", "-lGCBase_gcc-4.4-arm_v3_0_NI", // wpilib stuff
-      "-lGCBase_gcc-4.4-arm_v3_0_NI", "-lNiFpga", "-lNiRioSrv", "-lniriodevenum", "-lniriosession", // wpilib stuff
-      "-L", "/Users/shadaj/Downloads/wpilib-natives", "-L", "/Users/shadaj/wpilib/cpp/current/lib"
+      "-lm", "-lc", "-lstdc++", "-lpthread", // system stuff,
+      "-lwpiHal", "-lwpiutil", "-l:libniriosession.so.17.0.0", "-l:libniriodevenum.so.17.0.0",
+      "-l:libRoboRIO_FRC_ChipObject.so.18.0.0", "-l:libvisa.so", "-l:libFRC_NetworkCommunication.so.18.0.0",
+      "-l:libNiFpga.so.17.0.0", "-l:libNiFpgaLv.so.17.0.0", "-l:libNiRioSrv.so.17.0.0",
+      "-L/Users/shadaj/wpilib/common/current/lib/linux/athena/shared",
+      "-L/Users/shadaj/wpilib/cpp/current/reflib/linux/athena/shared"
     )
   )
 } else Seq.empty

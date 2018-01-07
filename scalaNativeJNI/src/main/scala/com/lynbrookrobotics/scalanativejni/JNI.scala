@@ -13,14 +13,14 @@ object JNIMacrosImpl {
 
     def sigStringForType(cls: Type): String = {
       cls.typeSymbol.fullName match {
-        case "boolean" => "Z"
-        case "byte" => "B"
-        case "char" => "C"
-        case "short" => "S"
-        case "int" => "I"
-        case "long" => "J"
-        case "float" => "F"
-        case "double" => "D"
+        case "scala.Boolean" => "Z"
+        case "scala.Byte" => "B"
+        case "scala.Char" => "C"
+        case "scala.Short" => "S"
+        case "scala.Int" => "I"
+        case "scala.Long" => "J"
+        case "scala.Float" => "F"
+        case "scala.Double" => "D"
         case "scala.Unit" => "V"
         case "scala.Array" =>
           s"[${sigStringForType(cls.typeArgs.head)}"
@@ -31,34 +31,57 @@ object JNIMacrosImpl {
 
     val methodIds = targetType.members.toList
       .filter(m => m.isMethod && m.isPublic && !m.isSynthetic
-        && m.owner.fullName != "java.lang.Object" && m.owner.fullName != "scala.Any").map { member =>
-      val paramsString = member.asMethod.paramLists.head.map(_.typeSignature).map(sigStringForType).mkString
+        && m.owner.fullName == targetType.typeSymbol.fullName
+        && m.asMethod.paramLists.nonEmpty).map { member =>
+      val paramsString = member.asMethod.paramLists.head
+        .map(_.typeSignature).map(sigStringForType).mkString
+
+      val callerParamsCode = member.asMethod.paramLists.head.map { param =>
+        val isObjectArray =
+          param.typeSignature.typeSymbol.fullName == "scala.Array" &&
+          param.typeSignature.typeArgs.head.baseClasses.exists(_.fullName == "java.lang.Object")
+
+        if (isObjectArray) {
+          s"""{
+             |  val r = !(a + position).cast[_root_.scala.scalanative.native.Ptr[Object]]
+             |  position += _root_.scala.scalanative.native.sizeof[Object]
+             |  r.asInstanceOf[${param.typeSignature}]
+             |}""".stripMargin
+        } else {
+          s"""{
+             |  val r = !(a + position).cast[_root_.scala.scalanative.native.Ptr[${param.typeSignature}]]
+             |  position += _root_.scala.scalanative.native.sizeof[${param.typeSignature}]
+             |  r
+             |}""".stripMargin
+        }
+      }
 
       if (member.isConstructor) {
         val name = "<init>"
         val signatureString = s"($paramsString)V"
-        val constructorParamsStrings = member.asMethod.paramLists.head.map { param =>
-          s"""{
-             |  val r = !(a + position).cast[_root_.scala.scalanative.native.Ptr[${param.typeSignature.typeSymbol.fullName}]]
-             |  position += _root_.scala.scalanative.native.sizeof[${param.typeSignature.typeSymbol.fullName}]
-             |  r
-             |}""".stripMargin
-        }
 
         s"""("$name", "$signatureString") -> new _root_.com.lynbrookrobotics.scalanativejni.JMethodID {
            |  override def run(a: _root_.scala.scalanative.native.Ptr[Byte]): Any = {
            |    var position = 0
            |    new ${targetType.typeSymbol.fullName}(
-           |      ${constructorParamsStrings.mkString(",\n")}
+           |      ${callerParamsCode.mkString(",\n")}
            |    )
            |  }
+           |
+           |  override def runOn(obj: Object, a: _root_.scala.scalanative.native.Ptr[Byte]): Any = throw new Exception("Cannot call runOn with a constructor")
            |}""".stripMargin
       } else {
         val name = member.name.decodedName
         val signatureString = s"($paramsString)${sigStringForType(member.typeSignature.resultType)}"
+
         s"""("$name", "$signatureString") -> new _root_.com.lynbrookrobotics.scalanativejni.JMethodID {
-           |  override def run(a: _root_.scala.scalanative.native.Ptr[Byte]): Any = {
-           |    null
+           |  override def run(a: _root_.scala.scalanative.native.Ptr[Byte]): Any = throw new Exception("Cannot call run with a instance method")
+           |
+           |  override def runOn(obj: Object, a: _root_.scala.scalanative.native.Ptr[Byte]): Any = {
+           |    var position = 0
+           |    obj.asInstanceOf[${targetType.typeSymbol.fullName}].$name(
+           |      ${callerParamsCode.mkString(",\n")}
+           |    )
            |  }
            |}""".stripMargin
       }
@@ -66,21 +89,12 @@ object JNIMacrosImpl {
 
     c.parse(
       s"""_root_.com.lynbrookrobotics.scalanativejni.JClass(
-         |  name = "java/lang/RuntimeException",
+         |  name = "${targetType.typeSymbol.fullName.split('.').mkString("/")}",
          |  methods = Map(
          |    ${methodIds.mkString(",\n")}
          |  )
          |)""".stripMargin
     )
-
-//    val constructorMethodIDs: Seq[Tree] = targetType.con.getDeclaredConstructors.toList.map { c =>
-//      val paramsString = c.getParameterTypes.toList.map(sigStringForType).mkString
-
-//      println(signatureString)
-//      q"null"
-//    }
-
-//    q"null"
   }
 
   def jniImpl[T: c.WeakTypeTag](c: whitebox.Context): c.Expr[T] = {

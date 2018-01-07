@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) FIRST 2008-2017. All Rights Reserved.                        */
+/* Copyright (c) 2008-2018 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -9,11 +9,7 @@ package edu.wpi.first.wpilibj
 
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tResourceType
 import edu.wpi.first.wpilibj.hal.HAL
-//import edu.wpi.first.wpilibj.livewindow.LiveWindow
-//import edu.wpi.first.wpilibj.tables.ITable
-//import edu.wpi.first.wpilibj.tables.ITableListener
-
-class Servo(val channel: Int)
+//import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder
 
 /**
   * Constructor.<br>
@@ -24,11 +20,11 @@ class Servo(val channel: Int)
   * @param channel The PWM channel to which the servo is attached. 0-9 are on-board, 10-19 are on
   *                the MXP port
   */
-  extends PWM(channel) {
+class Servo(val channel: Int) extends PWM(channel) {
   setBounds(Servo.kDefaultMaxServoPWM, 0, 0, 0, Servo.kDefaultMinServoPWM)
   setPeriodMultiplier(PWM.PeriodMultiplier.k4X)
-//  LiveWindow.addActuator("Servo", getChannel, this)
   HAL.report(tResourceType.kResourceType_Servo, getChannel)
+//  setName("Servo", getChannel)
 
   /**
     * Set the servo position.
@@ -82,33 +78,9 @@ class Servo(val channel: Int)
 
   private def getServoAngleRange = Servo.kMaxServoAngle - Servo.kMinServoAngle
 
-//  /*
-//     * Live Window code, only does anything if live window is activated.
-//     */ def getSmartDashboardType = "Servo"
-//
-//  private var m_table = null
-//  private var m_tableListener = null
-//
-//  def initTable(subtable: Nothing): Unit = {
-//    m_table = subtable
-//    updateTable()
-//  }
-//
-//  def updateTable(): Unit = {
-//    if (m_table != null) m_table.putNumber("Value", get)
-//  }
-//
-//  def startLiveWindowMode(): Unit = {
-//    m_tableListener = new Nothing() {
-//      def valueChanged(itable: Nothing, key: String, value: Any, bln: Boolean): Unit = {
-//        set(value.asInstanceOf[Double].doubleValue)
-//      }
-//    }
-//    m_table.addTableListener("Value", m_tableListener, true)
-//  }
-//
-//  def stopLiveWindowMode(): Unit = { // TODO: Broken, should only remove the listener from "Value" only.
-//    m_table.removeTableListener(m_tableListener)
+//  def initSendable(builder: Nothing): Unit = {
+//    builder.setSmartDashboardType("Servo")
+//    builder.addDoubleProperty("Value", this.get, this.set)
 //  }
 }
 

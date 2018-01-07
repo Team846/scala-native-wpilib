@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) FIRST 2008-2017. All Rights Reserved.                        */
+/* Copyright (c) 2008-2018 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -8,8 +8,8 @@
 package edu.wpi.first.wpilibj.internal
 
 import edu.wpi.first.wpilibj.DriverStation
+import edu.wpi.first.wpilibj.RobotController
 import edu.wpi.first.wpilibj.Timer
-import edu.wpi.first.wpilibj.Utility
 
 /**
   * Timer objects measure accumulated time in milliseconds. The timer object functions like a
@@ -41,7 +41,7 @@ class HardwareTimer extends Timer.StaticInterface {
     *
     * @return Robot running time in seconds.
     */
-  override def getFPGATimestamp: Double = Utility.getFPGATime / 1000000.0
+  override def getFPGATimestamp: Double = RobotController.getFPGATime / 1000000.0
 
   override def getMatchTime: Double = DriverStation.getInstance.getMatchTime
 
@@ -51,14 +51,13 @@ class HardwareTimer extends Timer.StaticInterface {
     * Create a new timer object. Create a new timer object and reset the time to zero. The timer is
     * initially not running and must be started.
     */
-  private[internal] class TimerImpl() extends Timer.Interface {
+  private[internal] class TimerImpl private[internal]() extends Timer.Interface {
+    reset()
     private var m_startTime = .0
     private var m_accumulatedTime = .0
     private var m_running = false
 
-    reset()
-
-    private def getMsClock = Utility.getFPGATime / 1000.0
+    private def getMsClock = RobotController.getFPGATime / 1000.0
 
     /**
       * Get the current time from the timer. If the clock is running it is derived from the current

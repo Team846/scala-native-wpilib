@@ -1,14 +1,23 @@
+/*----------------------------------------------------------------------------*/
+/* Copyright (c) 2016-2018 FIRST. All Rights Reserved.                        */
+/* Open Source Software - may be modified and shared by FRC teams. The code   */
+/* must be accompanied by the FIRST BSD license file in the root directory of */
+/* the project.                                                               */
+/*----------------------------------------------------------------------------*/
+
 package edu.wpi.first.wpilibj.hal
 
 import java.nio.ByteBuffer
-
 import com.lynbrookrobotics.scalanativejni._
 
-@jnilib("wpilibJavaJNI")
+/**
+  * JNI Wrapper for HAL<br>.
+  */
+@jnilib("wpilibJNI")
 object HAL extends JNIWrapper {
   def waitForDSData(): Unit = jni
 
-  def initialize(mode: Int): Int = jni
+  def initialize(timeout: Int, mode: Int): Boolean = jni
 
   def observeUserProgramStarting(): Unit = jni
 
@@ -44,16 +53,15 @@ object HAL extends JNIWrapper {
     */
   def report(resource: Int, instanceNumber: Int, context: Int, feature: String): Int = jni
 
-  private def nativeGetControlWord(): Int = jni
+  private def nativeGetControlWord: Int = jni
 
   @SuppressWarnings(Array("JavadocMethod"))
   def getControlWord(controlWord: ControlWord): Unit = {
     val word = nativeGetControlWord
-    controlWord.update((word & 1) != 0, ((word >> 1) & 1) != 0, ((word >> 2) & 1) != 0,
-      ((word >> 3) & 1) != 0, ((word >> 4) & 1) != 0, ((word >> 5) & 1) != 0)
+    controlWord.update((word & 1) != 0, ((word >> 1) & 1) != 0, ((word >> 2) & 1) != 0, ((word >> 3) & 1) != 0, ((word >> 4) & 1) != 0, ((word >> 5) & 1) != 0)
   }
 
-  private def nativeGetAllianceStation(): Int = jni
+  private def nativeGetAllianceStation: Int = jni
 
   @SuppressWarnings(Array("JavadocMethod"))
   def getAllianceStation: AllianceStationID = nativeGetAllianceStation match {
@@ -72,6 +80,15 @@ object HAL extends JNIWrapper {
     case _ =>
       null
   }
+
+  @SuppressWarnings(Array("JavadocMethod"))
+  def isNewControlData: Boolean = jni
+
+  @SuppressWarnings(Array("JavadocMethod"))
+  def releaseDSMutex(): Unit = jni
+
+  @SuppressWarnings(Array("JavadocMethod"))
+  def waitForDSDataTimeout(timeout: Double): Boolean = jni
 
   var kMaxJoystickAxes = 12
   var kMaxJoystickPOVs = 12
@@ -98,7 +115,7 @@ object HAL extends JNIWrapper {
 
   def getBrownedOut: Boolean = jni
 
-  def setErrorData(error: String): Int = jni
+  def getMatchInfo(info: MatchInfoData): Int = jni
 
   def sendError(isError: Boolean, errorCode: Int, isLVCode: Boolean, details: String, location: String, callStack: String, printMsg: Boolean): Int = jni
 }

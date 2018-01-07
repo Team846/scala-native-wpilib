@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) FIRST 2016-2017. All Rights Reserved.                        */
+/* Copyright (c) FIRST 2016-2018. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -9,10 +9,10 @@ package edu.wpi.first.wpilibj.hal
 
 import com.lynbrookrobotics.scalanativejni._
 
-//import edu.wpi.first.wpilibj.PWMConfigDataResult
+import edu.wpi.first.wpilibj.PWMConfigDataResult
 
 @SuppressWarnings(Array("AbbreviationAsWordInName"))
-@jnilib("wpilibJavaJNI")
+@jnilib("wpilibJNI")
 object PWMJNI extends JNIWrapper {
   def initializePWMPort(halPortHandle: Int): Int = jni
 
@@ -24,7 +24,7 @@ object PWMJNI extends JNIWrapper {
 
   def setPWMConfig(pwmPortHandle: Int, maxPwm: Double, deadbandMaxPwm: Double, centerPwm: Double, deadbandMinPwm: Double, minPwm: Double): Unit = jni
 
-  //def getPWMConfigRaw(pwmPortHandle: Int): PWMConfigDataResult = jni
+  def getPWMConfigRaw(pwmPortHandle: Int): PWMConfigDataResult = jni
 
   def setPWMEliminateDeadband(pwmPortHandle: Int, eliminateDeadband: Boolean): Unit = jni
 

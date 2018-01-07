@@ -1,17 +1,16 @@
-package edu.wpi.first.wpilibj
-
-import edu.wpi.first.wpilibj.util.BaseSystemNotInitializedException
-
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) FIRST 2016-2017. All Rights Reserved.                        */
+/* Copyright (c) 2016-2018 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
+package edu.wpi.first.wpilibj
+
+import edu.wpi.first.wpilibj.util.BaseSystemNotInitializedException
+
 class Timer @SuppressWarnings(Array("JavadocMethod"))() {
   final private var m_timer: Timer.Interface = null
-
   if (Timer.impl != null) m_timer = Timer.impl.newTimer
   else throw new BaseSystemNotInitializedException(classOf[Timer.StaticInterface], classOf[Timer])
 
@@ -63,8 +62,7 @@ class Timer @SuppressWarnings(Array("JavadocMethod"))() {
 object Timer {
   private var impl: StaticInterface = null
 
-  @SuppressWarnings(Array("MethodName"))
-  def SetImplementation(ti: Timer.StaticInterface): Unit = {
+  @SuppressWarnings(Array("MethodName")) def SetImplementation(ti: Timer.StaticInterface): Unit = {
     impl = ti
   }
 
@@ -74,20 +72,25 @@ object Timer {
     *
     * @return Robot running time in seconds.
     */
-  @SuppressWarnings(Array("AbbreviationAsWordInName")) def getFPGATimestamp: Double = if (impl != null) impl.getFPGATimestamp
-  else throw new BaseSystemNotInitializedException(classOf[Timer.StaticInterface], classOf[Timer])
+  @SuppressWarnings(Array("AbbreviationAsWordInName"))
+  def getFPGATimestamp: Double = {
+    if (impl != null) impl.getFPGATimestamp
+    else throw new BaseSystemNotInitializedException(classOf[Timer.StaticInterface], classOf[Timer])
+  }
 
   /**
-    * Return the approximate match time The FMS does not currently send the official match time to
-    * the robots This returns the time since the enable signal sent from the Driver Station At the
-    * beginning of autonomous, the time is reset to 0.0 seconds At the beginning of teleop, the time
-    * is reset to +15.0 seconds If the robot is disabled, this returns 0.0 seconds Warning: This is
-    * not an official time (so it cannot be used to argue with referees).
+    * Return the approximate match time. The FMS does not send an official match time to the robots,
+    * but does send an approximate match time. The value will count down the time remaining in the
+    * current period (auto or teleop). Warning: This is not an official time (so it cannot be used to
+    * dispute ref calls or guarantee that a function will trigger before the match ends) The
+    * Practice Match function of the DS approximates the behaviour seen on the field.
     *
-    * @return Match time in seconds since the beginning of autonomous
+    * @return Time remaining in current match period (auto or teleop) in seconds
     */
-  def getMatchTime: Double = if (impl != null) impl.getMatchTime
-  else throw new BaseSystemNotInitializedException(classOf[Timer.StaticInterface], classOf[Timer])
+  def getMatchTime: Double = {
+    if (impl != null) impl.getMatchTime
+    else throw new BaseSystemNotInitializedException(classOf[Timer.StaticInterface], classOf[Timer])
+  }
 
   /**
     * Pause the thread for a specified time. Pause the execution of the thread for a specified period

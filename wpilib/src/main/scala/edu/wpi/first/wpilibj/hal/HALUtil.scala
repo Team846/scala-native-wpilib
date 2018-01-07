@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) FIRST 2016-2017. All Rights Reserved.                        */
+/* Copyright (c) FIRST 2016-2018. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -11,7 +11,7 @@ import com.lynbrookrobotics.scalanativejni._
 
 import scala.scalanative.native.{Ptr, extern, link, name}
 
-@jnilib("wpilibJavaJNI")
+@jnilib("wpilibJNI")
 object HALUtil extends JNIWrapper {
   val NULL_PARAMETER: Int = -1005
   val SAMPLE_RATE_TOO_HIGH = 1001
@@ -41,7 +41,7 @@ object HALUtil extends JNIWrapper {
   def getHALstrerror: String = getHALstrerror(getHALErrno)
 }
 
-@extern @link("wpilibJavaJNI")
+@extern @link("wpilibJNI")
 object JNILoad {
   @name("JNI_OnLoad")
   def JNI_OnLoad(vm: VM, reserved: Ptr[Unit]): Int = extern

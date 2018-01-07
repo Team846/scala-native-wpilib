@@ -4,10 +4,8 @@
 #include <stdio.h>
 #include <cstdarg>
 #include <support/jni_util.h>
-#include <HALUtil.h>
 #include <wchar.h>
 
-using namespace frc;
 using namespace wpi::java;
 
 extern "C" {
@@ -16,6 +14,7 @@ extern "C" {
                       void (JNICALL *JNIEnv_DeleteLocalRef) (JNIEnv *env, jobject obj),
                       void (JNICALL *JNIEnv_DeleteGlobalRef) (JNIEnv *env, jobject gref),
                       jobject (JNICALL *JNIEnv_NewObjectV) (JNIEnv *env, jclass clazz, jmethodID methodID, va_list args),
+                      jobject (JNICALL *JNIEnv_CallObjectMethodV) (JNIEnv *env, jobject obj, jmethodID methodID, va_list args),
                       jmethodID (JNICALL *JNIEnv_GetMethodID) (JNIEnv *env, jclass clazz, const char *name, const char *sig),
 
                       jint (JNICALL *JNIEnv_Throw) (JNIEnv *env, jthrowable obj),
@@ -39,6 +38,7 @@ extern "C" {
         env->DeleteLocalRef = JNIEnv_DeleteLocalRef;
         env->DeleteGlobalRef = JNIEnv_DeleteGlobalRef;
         env->NewObjectV = JNIEnv_NewObjectV;
+        env->CallObjectMethodV = JNIEnv_CallObjectMethodV;
         env->GetMethodID = JNIEnv_GetMethodID;
 
         env->Throw = JNIEnv_Throw;

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) FIRST 2016-2017. All Rights Reserved.                        */
+/* Copyright (c) 2016-2018 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -10,11 +10,11 @@ package edu.wpi.first.wpilibj.hal
 /**
   * JNI wrapper for library <b>FRC_NetworkCommunication</b><br>.
   */
-object FRCNetComm extends JNIWrapper {
+@SuppressWarnings(Array("MethodName")) object FRCNetComm extends JNIWrapper {
   /**
     * Module type from LoadOut.h
     */
-  object tModuleType {
+  @SuppressWarnings(Array("TypeName")) object tModuleType {
     val kModuleType_Unknown = 0x00
     val kModuleType_Analog = 0x01
     val kModuleType_Digital = 0x02
@@ -24,7 +24,7 @@ object FRCNetComm extends JNIWrapper {
   /**
     * Target class from LoadOut.h
     */
-  object tTargetClass {
+  @SuppressWarnings(Array("TypeName")) object tTargetClass {
     val kTargetClass_Unknown = 0x00
     val kTargetClass_FRC1 = 0x10
     val kTargetClass_FRC2 = 0x20
@@ -40,7 +40,7 @@ object FRCNetComm extends JNIWrapper {
   /**
     * Resource type from UsageReporting.h
     */
-  object tResourceType {
+  @SuppressWarnings(Array("TypeName")) object tResourceType {
     val kResourceType_Controller = 0
     val kResourceType_Module = 1
     val kResourceType_Language = 2
@@ -92,19 +92,24 @@ object FRCNetComm extends JNIWrapper {
     val kResourceType_SRF08 = 48
     val kResourceType_AnalogOutput = 49
     val kResourceType_VictorSP = 50
-    val kResourceType_TalonSRX = 51
+    val kResourceType_PWMTalonSRX = 51
     val kResourceType_CANTalonSRX = 52
     val kResourceType_ADXL362 = 53
     val kResourceType_ADXRS450 = 54
     val kResourceType_RevSPARK = 55
     val kResourceType_MindsensorsSD540 = 56
     val kResourceType_DigitalFilter = 57
+    val kResourceType_ADIS16448 = 58
+    val kResourceType_PDP = 59
+    val kResourceType_PCM = 60
+    val kResourceType_PigeonIMU = 61
+    val kResourceType_NidecBrushless = 62
   }
 
   /**
     * Instances from UsageReporting.h
     */
-  object tInstances {
+  @SuppressWarnings(Array("TypeName")) object tInstances {
     val kLanguage_LabVIEW = 1
     val kLanguage_CPlusPlus = 2
     val kLanguage_Java = 3
