@@ -43,11 +43,11 @@ class DriverStation private() extends RobotState.Interface {
   private val m_buttonCountBuffer = ByteBuffer.allocateDirect(1)
 
   // Internal Driver Station thread
-//  private var m_thread = new Thread(new DriverStation.DriverStationTask(this), "FRCDriverStation")
+  private var m_thread = new Thread(new DriverStation.DriverStationTask(this), "FRCDriverStation")
   private var m_threadKeepAlive = true
   final private var m_cacheDataMutex = new Object
-//  m_thread.setPriority((Thread.NORM_PRIORITY + Thread.MAX_PRIORITY) / 2)
-//  m_thread.start()
+  m_thread.setPriority((Thread.NORM_PRIORITY + Thread.MAX_PRIORITY) / 2)
+  m_thread.start()
 
   // Robot state status variables
   private var m_userInDisabled = false
@@ -115,12 +115,13 @@ class DriverStation private() extends RobotState.Interface {
     if (stick < 0 || stick >= DriverStation.kJoystickPorts) throw new RuntimeException("Joystick index is out of range, should be 0-3")
     var error = false
     var retVal = false
-    //m_cacheDataMutex synchronized
-    if (button > m_joystickButtons(stick).m_count) {
-      error = true
-      retVal = false
+    m_cacheDataMutex.synchronized {
+      if (button > m_joystickButtons(stick).m_count) {
+        error = true
+        retVal = false
+      }
+      else retVal = (m_joystickButtons(stick).m_buttons & 1 << (button - 1)) != 0
     }
-    else retVal = (m_joystickButtons(stick).m_buttons & 1 << (button - 1)) != 0
 
     if (error) reportJoystickUnpluggedWarning("Joystick Button " + button + " on port " + stick + " not available, check if controller is plugged in")
     retVal
@@ -182,12 +183,13 @@ class DriverStation private() extends RobotState.Interface {
     if (axis < 0 || axis >= HAL.kMaxJoystickAxes) throw new RuntimeException("Joystick axis is out of range")
     var error = false
     var retVal = 0.0
-    //m_cacheDataMutex synchronized
-    if (axis >= m_joystickAxes(stick).m_count) { // set error
-      error = true
-      retVal = 0.0
+    m_cacheDataMutex.synchronized {
+      if (axis >= m_joystickAxes(stick).m_count) { // set error
+        error = true
+        retVal = 0.0
+      }
+      else retVal = m_joystickAxes(stick).m_axes(axis)
     }
-    else retVal = m_joystickAxes(stick).m_axes(axis)
 
     if (error) reportJoystickUnpluggedWarning("Joystick axis " + axis + " on port " + stick + " not available, check if controller is plugged in")
     retVal
@@ -203,12 +205,13 @@ class DriverStation private() extends RobotState.Interface {
     if (pov < 0 || pov >= HAL.kMaxJoystickPOVs) throw new RuntimeException("Joystick POV is out of range")
     var error = false
     var retVal = -1
-    //m_cacheDataMutex synchronized
-    if (pov >= m_joystickPOVs(stick).m_count) {
-      error = true
-      retVal = -1
+    m_cacheDataMutex.synchronized {
+      if (pov >= m_joystickPOVs(stick).m_count) {
+        error = true
+        retVal = -1
+      }
+      else retVal = m_joystickPOVs(stick).m_povs(pov)
     }
-    else retVal = m_joystickPOVs(stick).m_povs(pov)
 
     if (error) reportJoystickUnpluggedWarning("Joystick POV " + pov + " on port " + stick + " not available, check if controller is plugged in")
     retVal
@@ -222,9 +225,9 @@ class DriverStation private() extends RobotState.Interface {
     */
   def getStickButtons(stick: Int): Int = {
     if (stick < 0 || stick >= DriverStation.kJoystickPorts) throw new RuntimeException("Joystick index is out of range, should be 0-3")
-    //m_cacheDataMutex synchronized
+    m_cacheDataMutex.synchronized {
       m_joystickButtons(stick).m_buttons
-
+    }
   }
 
   /**
@@ -235,9 +238,9 @@ class DriverStation private() extends RobotState.Interface {
     */
   def getStickAxisCount(stick: Int): Int = {
     if (stick < 0 || stick >= DriverStation.kJoystickPorts) throw new RuntimeException("Joystick index is out of range, should be 0-5")
-    //m_cacheDataMutex synchronized
+    m_cacheDataMutex.synchronized {
       m_joystickAxes(stick).m_count
-
+    }
   }
 
   /**
@@ -248,9 +251,9 @@ class DriverStation private() extends RobotState.Interface {
     */
   def getStickPOVCount(stick: Int): Int = {
     if (stick < 0 || stick >= DriverStation.kJoystickPorts) throw new RuntimeException("Joystick index is out of range, should be 0-5")
-    //m_cacheDataMutex synchronized
+    m_cacheDataMutex.synchronized {
       m_joystickPOVs(stick).m_count
-
+    }
   }
 
   /**
@@ -261,9 +264,9 @@ class DriverStation private() extends RobotState.Interface {
     */
   def getStickButtonCount(stick: Int): Int = {
     if (stick < 0 || stick >= DriverStation.kJoystickPorts) throw new RuntimeException("Joystick index is out of range, should be 0-5")
-    //m_cacheDataMutex synchronized
+    m_cacheDataMutex.synchronized {
       m_joystickButtons(stick).m_count
-
+    }
   }
 
   /**
@@ -276,13 +279,14 @@ class DriverStation private() extends RobotState.Interface {
     if (stick < 0 || stick >= DriverStation.kJoystickPorts) throw new RuntimeException("Joystick index is out of range, should be 0-5")
     var error = false
     var retVal = false
-    //m_cacheDataMutex synchronized // TODO: Remove this when calling for descriptor on empty stick no longer
-    // crashes
-    if (1 > m_joystickButtons(stick).m_count && 1 > m_joystickAxes(stick).m_count) {
-      error = true
-      retVal = false
+    m_cacheDataMutex.synchronized { // TODO: Remove this when calling for descriptor on empty stick no longer
+      // crashes
+      if (1 > m_joystickButtons(stick).m_count && 1 > m_joystickAxes(stick).m_count) {
+        error = true
+        retVal = false
+      }
+      else if (HAL.getJoystickIsXbox(stick.toByte) == 1) retVal = true
     }
-    else if (HAL.getJoystickIsXbox(stick.toByte) == 1) retVal = true
 
     if (error) reportJoystickUnpluggedWarning("Joystick on port " + stick + " not available, check if controller is plugged in")
     retVal
@@ -298,12 +302,13 @@ class DriverStation private() extends RobotState.Interface {
     if (stick < 0 || stick >= DriverStation.kJoystickPorts) throw new RuntimeException("Joystick index is out of range, should be 0-5")
     var error = false
     var retVal = -1
-    //m_cacheDataMutex synchronized
-    if (1 > m_joystickButtons(stick).m_count && 1 > m_joystickAxes(stick).m_count) {
-      error = true
-      retVal = -1
+    m_cacheDataMutex.synchronized {
+      if (1 > m_joystickButtons(stick).m_count && 1 > m_joystickAxes(stick).m_count) {
+        error = true
+        retVal = -1
+      }
+      else retVal = HAL.getJoystickType(stick.toByte)
     }
-    else retVal = HAL.getJoystickType(stick.toByte)
 
     if (error) reportJoystickUnpluggedWarning("Joystick on port " + stick + " not available, check if controller is plugged in")
     retVal
@@ -319,12 +324,13 @@ class DriverStation private() extends RobotState.Interface {
     if (stick < 0 || stick >= DriverStation.kJoystickPorts) throw new RuntimeException("Joystick index is out of range, should be 0-5")
     var error = false
     var retVal = ""
-    //m_cacheDataMutex synchronized
-    if (1 > m_joystickButtons(stick).m_count && 1 > m_joystickAxes(stick).m_count) {
-      error = true
-      retVal = ""
+    m_cacheDataMutex.synchronized {
+      if (1 > m_joystickButtons(stick).m_count && 1 > m_joystickAxes(stick).m_count) {
+        error = true
+        retVal = ""
+      }
+      else retVal = HAL.getJoystickName(stick.toByte)
     }
-    else retVal = HAL.getJoystickName(stick.toByte)
 
     if (error) reportJoystickUnpluggedWarning("Joystick on port " + stick + " not available, check if controller is plugged in")
     retVal
@@ -340,8 +346,9 @@ class DriverStation private() extends RobotState.Interface {
   def getJoystickAxisType(stick: Int, axis: Int): Int = {
     if (stick < 0 || stick >= DriverStation.kJoystickPorts) throw new RuntimeException("Joystick index is out of range, should be 0-5")
     var retVal = -1
-    //m_cacheDataMutex synchronized
+    m_cacheDataMutex.synchronized {
       retVal = HAL.getJoystickAxisType(stick.toByte, axis.toByte)
+    }
 
     retVal
   }
@@ -352,8 +359,9 @@ class DriverStation private() extends RobotState.Interface {
     * @return True if the robot is enabled, false otherwise.
     */
   override def isEnabled: Boolean = {
-    //m_controlWordMutex synchronized
+    m_controlWordMutex.synchronized {
       updateControlWord(false)
+    }
     m_controlWordCache.getEnabled && m_controlWordCache.getDSAttached
 
   }
@@ -372,8 +380,9 @@ class DriverStation private() extends RobotState.Interface {
     * @return True if autonomous mode should be enabled, false otherwise.
     */
   override def isAutonomous: Boolean = {
-    //m_controlWordMutex synchronized
+    m_controlWordMutex.synchronized {
       updateControlWord(false)
+    }
     m_controlWordCache.getAutonomous
 
   }
@@ -393,8 +402,9 @@ class DriverStation private() extends RobotState.Interface {
     * @return True if test mode should be enabled, false otherwise.
     */
   override def isTest: Boolean = {
-    //m_controlWordMutex synchronized
+    m_controlWordMutex.synchronized {
       updateControlWord(false)
+    }
     m_controlWordCache.getTest
 
   }
@@ -405,8 +415,9 @@ class DriverStation private() extends RobotState.Interface {
     * @return True if Driver Station is attached, false otherwise.
     */
   def isDSAttached: Boolean = {
-    //m_controlWordMutex synchronized
+    m_controlWordMutex.synchronized {
       updateControlWord(false)
+    }
     m_controlWordCache.getDSAttached
 
   }
@@ -425,8 +436,9 @@ class DriverStation private() extends RobotState.Interface {
     * @return true if the robot is competing on a field being controlled by a Field Management System
     */
   def isFMSAttached: Boolean = {
-    //m_controlWordMutex synchronized
+    m_controlWordMutex.synchronized {
       updateControlWord(false)
+    }
     m_controlWordCache.getFMSAttached
 
   }
@@ -454,9 +466,9 @@ class DriverStation private() extends RobotState.Interface {
     * @return the game specific message
     */
   def getGameSpecificMessage: String = {
-    //m_cacheDataMutex synchronized
+    m_cacheDataMutex.synchronized {
       m_matchInfo.gameSpecificMessage
-
+    }
   }
 
   /**
@@ -465,9 +477,9 @@ class DriverStation private() extends RobotState.Interface {
     * @return the event name
     */
   def getEventName: String = {
-    //m_cacheDataMutex synchronized
+    m_cacheDataMutex.synchronized {
       m_matchInfo.eventName
-
+    }
   }
 
   /**
@@ -477,8 +489,9 @@ class DriverStation private() extends RobotState.Interface {
     */
   def getMatchType: DriverStation.MatchType = {
     var matchType = 0
-    //m_cacheDataMutex synchronized
+    m_cacheDataMutex.synchronized {
       matchType = m_matchInfo.matchType
+    }
 
     matchType match {
       case 1 =>
@@ -498,9 +511,9 @@ class DriverStation private() extends RobotState.Interface {
     * @return the match number
     */
   def getMatchNumber: Int = {
-    //m_cacheDataMutex synchronized
+    m_cacheDataMutex.synchronized {
       m_matchInfo.matchNumber
-
+    }
   }
 
   /**
@@ -509,9 +522,9 @@ class DriverStation private() extends RobotState.Interface {
     * @return the replay number
     */
   def getReplayNumber: Int = {
-    //m_cacheDataMutex synchronized
+    m_cacheDataMutex.synchronized {
       m_matchInfo.replayNumber
-
+    }
   }
 
   /**
@@ -572,7 +585,6 @@ class DriverStation private() extends RobotState.Interface {
     */
   def waitForData(timeout: Double): Boolean = {
     val ret = HAL.waitForDSDataTimeout(timeout)
-    run() // for update because we don't have a thread
     ret
   }
 
@@ -655,33 +667,35 @@ class DriverStation private() extends RobotState.Interface {
     // Force a control word update, to make sure the data is the newest.
     updateControlWord(true)
     // lock joystick mutex to swap cache data
-    //m_cacheDataMutex synchronized
-    var i = 0
-    while ( {
-      i < DriverStation.kJoystickPorts
-    }) { // If buttons weren't pressed and are now, set flags in m_buttonsPressed
-      m_joystickButtonsPressed(i).m_buttons |= ~m_joystickButtons(i).m_buttons & m_joystickButtonsCache(i).m_buttons
-      // If buttons were pressed and aren't now, set flags in m_buttonsReleased
-      m_joystickButtonsReleased(i).m_buttons |= m_joystickButtons(i).m_buttons & ~m_joystickButtonsCache(i).m_buttons
+    m_cacheDataMutex.synchronized {
+      var i = 0
+      while ( {
+        i < DriverStation.kJoystickPorts
+      }) { // If buttons weren't pressed and are now, set flags in m_buttonsPressed
+        m_joystickButtonsPressed(i).m_buttons |= ~m_joystickButtons(i).m_buttons & m_joystickButtonsCache(i).m_buttons
+        // If buttons were pressed and aren't now, set flags in m_buttonsReleased
+        m_joystickButtonsReleased(i).m_buttons |= m_joystickButtons(i).m_buttons & ~m_joystickButtonsCache(i).m_buttons
 
-      {
-        i += 1; i - 1
+        {
+          i += 1;
+          i - 1
+        }
       }
-    }
-    // move cache to actual data
-    val currentAxes = m_joystickAxes
-    m_joystickAxes = m_joystickAxesCache
-    m_joystickAxesCache = currentAxes
-    val currentButtons = m_joystickButtons
-    m_joystickButtons = m_joystickButtonsCache
-    m_joystickButtonsCache = currentButtons
-    val currentPOVs = m_joystickPOVs
-    m_joystickPOVs = m_joystickPOVsCache
-    m_joystickPOVsCache = currentPOVs
-    val currentInfo = m_matchInfo
-    m_matchInfo = m_matchInfoCache
-    m_matchInfoCache = currentInfo
 
+      // move cache to actual data
+      val currentAxes = m_joystickAxes
+      m_joystickAxes = m_joystickAxesCache
+      m_joystickAxesCache = currentAxes
+      val currentButtons = m_joystickButtons
+      m_joystickButtons = m_joystickButtonsCache
+      m_joystickButtonsCache = currentButtons
+      val currentPOVs = m_joystickPOVs
+      m_joystickPOVs = m_joystickPOVsCache
+      m_joystickPOVsCache = currentPOVs
+      val currentInfo = m_matchInfo
+      m_matchInfo = m_matchInfoCache
+      m_matchInfoCache = currentInfo
+    }
   }
 
   /**
@@ -709,10 +723,10 @@ class DriverStation private() extends RobotState.Interface {
     */
   private def run(): Unit = {
     var safetyCounter = 0
-//    while ( {
-//      m_threadKeepAlive
-//    }) {
-//      HAL.waitForDSData() we were already waiting where this is run
+    while ( {
+      m_threadKeepAlive
+    }) {
+      HAL.waitForDSData()
       getData()
       if (isDisabled) safetyCounter = 0
       if ( {
@@ -725,7 +739,7 @@ class DriverStation private() extends RobotState.Interface {
       if (m_userInAutonomous) HAL.observeUserProgramAutonomous()
       if (m_userInTeleop) HAL.observeUserProgramTeleop()
       if (m_userInTest) HAL.observeUserProgramTest()
-//    }
+    }
   }
 
   /**
@@ -736,12 +750,12 @@ class DriverStation private() extends RobotState.Interface {
     */
   private def updateControlWord(force: Boolean): Unit = {
     val now = System.currentTimeMillis
-    //m_controlWordMutex synchronized
-    if (now - m_lastControlWordUpdate > 50 || force) {
-      HAL.getControlWord(m_controlWordCache)
-      m_lastControlWordUpdate = now
+    m_controlWordMutex.synchronized {
+      if (now - m_lastControlWordUpdate > 50 || force) {
+        HAL.getControlWord(m_controlWordCache)
+        m_lastControlWordUpdate = now
+      }
     }
-
   }
 }
 
@@ -827,12 +841,7 @@ object DriverStation {
   }
 
   private def reportErrorImpl(isError: Boolean, code: Int, error: String, printTrace: Boolean): Unit = {
-    // Shadaj: "there must be a better way to do Thread.currentThread.getStackTrace, right?"
-    val trace = try {
-      throw new Exception()
-    } catch {
-      case e: Throwable => e.getStackTrace
-    }
+    val trace = Thread.currentThread().getStackTrace
 
     reportErrorImpl(isError, code, error, printTrace, trace, 3)
   }

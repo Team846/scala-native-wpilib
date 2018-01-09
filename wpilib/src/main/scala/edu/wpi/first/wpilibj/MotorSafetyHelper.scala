@@ -25,16 +25,17 @@ final class MotorSafetyHelper(val m_safeObject: MotorSafety) {
   private var m_stopTime = Timer.getFPGATimestamp
   final private val m_thisMutex = new Object
 
-//  MotorSafetyHelper.m_listMutex synchronized
+  MotorSafetyHelper.m_listMutex.synchronized {
     MotorSafetyHelper.m_helperList.add(this)
+  }
 
   /**
     * Feed the motor safety object. Resets the timer on this object that is used to do the timeouts.
     */
   def feed(): Unit = {
-//    m_thisMutex synchronized
+    m_thisMutex.synchronized {
       m_stopTime = Timer.getFPGATimestamp + m_expiration
-
+    }
   }
 
   /**
@@ -43,9 +44,9 @@ final class MotorSafetyHelper(val m_safeObject: MotorSafety) {
     * @param expirationTime The timeout value in seconds.
     */
   def setExpiration(expirationTime: Double): Unit = {
-//    m_thisMutex synchronized
+    m_thisMutex.synchronized {
       m_expiration = expirationTime
-
+    }
   }
 
   /**
@@ -54,9 +55,9 @@ final class MotorSafetyHelper(val m_safeObject: MotorSafety) {
     * @return the timeout value in seconds.
     */
   def getExpiration: Double = {
-//    m_thisMutex synchronized
+    m_thisMutex.synchronized {
       m_expiration
-
+    }
   }
 
   /**
@@ -65,9 +66,9 @@ final class MotorSafetyHelper(val m_safeObject: MotorSafety) {
     * @return a true value if the motor is still operating normally and hasn't timed out.
     */
   def isAlive: Boolean = {
-//    m_thisMutex synchronized
+    m_thisMutex.synchronized {
       !m_enabled || m_stopTime > Timer.getFPGATimestamp
-
+    }
   }
 
   /**
@@ -78,9 +79,10 @@ final class MotorSafetyHelper(val m_safeObject: MotorSafety) {
   def check(): Unit = {
     var enabled = false
     var stopTime = .0
-//    m_thisMutex synchronized
+    m_thisMutex.synchronized {
       enabled = m_enabled
       stopTime = m_stopTime
+    }
 
     if (!enabled || RobotState.isDisabled || RobotState.isTest) return
     if (stopTime < Timer.getFPGATimestamp) {
@@ -96,9 +98,9 @@ final class MotorSafetyHelper(val m_safeObject: MotorSafety) {
     * @param enabled True if motor safety is enforced for this object
     */
   def setSafetyEnabled(enabled: Boolean): Unit = {
-//    m_thisMutex synchronized
+    m_thisMutex. synchronized {
       m_enabled = enabled
-
+    }
   }
 
   /**
@@ -108,9 +110,9 @@ final class MotorSafetyHelper(val m_safeObject: MotorSafety) {
     * @return True if motor safety is enforced for this device
     */
   def isSafetyEnabled: Boolean = {
-//    m_thisMutex synchronized
+    m_thisMutex.synchronized {
       m_enabled
-
+    }
   }
 }
 
@@ -129,10 +131,11 @@ object MotorSafetyHelper {
     * poll all the motors and stop any that have timed out.
     */
   def checkMotors(): Unit = {
-    //    m_listMutex synchronized
-    import scala.collection.JavaConversions._
-    for (elem <- m_helperList) {
-      elem.check()
+    m_listMutex.synchronized {
+      import scala.collection.JavaConversions._
+      for (elem <- m_helperList) {
+        elem.check()
+      }
     }
   }
 }
