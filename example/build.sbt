@@ -1,6 +1,6 @@
 enablePlugins(ScalaNativePlugin)
 
-nativeMode := "debug"
+nativeMode := "release"
 
 nativeGC := "boehm"
 

@@ -203,6 +203,6 @@ package object scalanativejni {
                   getDirectBufferAddress: CFunctionPtr2[Env, ByteBuffer, Ptr[Byte]],
                   getDirectBufferCapacity: CFunctionPtr2[Env, ByteBuffer, Long]): Env = extern
     def createVM(env: Env): VM = extern
-    def testVM(vm: VM, env: Env, buf: ByteBuffer): Unit = extern
+    def testVM(vm: VM, env: Env): Unit = extern
   }
 }

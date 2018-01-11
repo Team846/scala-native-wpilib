@@ -5,6 +5,7 @@
 #include <cstdarg>
 #include <support/jni_util.h>
 #include <wchar.h>
+#include <pthread.h>
 
 using namespace wpi::java;
 
@@ -80,12 +81,20 @@ extern "C" {
         return (JavaVM*) ptr;
     }
 
-    void testVM(JavaVM *vm, JNIEnv* env, jobject buf) {
-        printf("hello!\n");
+    void testVM(JavaVM *vm, JNIEnv* env) {
+        auto thread = pthread_self();
+        struct sched_param param;
+        int policy;
+
+        pthread_getschedparam(thread, &policy, &param);
+        param.sched_priority = 99;
+
+        pthread_setschedparam(thread, policy, &param);
+//        printf("hello!\n");
 //        env->NewObject((jclass) 5, (jmethodID) 5, "foobar");
-        JException foo = JException(env, "java/lang/RuntimeException");
-        printf("created exception!\n");
-        foo.Throw(env, "hallo");
+//        JException foo = JException(env, "java/lang/RuntimeException");
+//        printf("created exception!\n");
+//        foo.Throw(env, "hallo");
 
 //        printf("initing %p %lld\n", env->GetDirectBufferAddress(buf), env->GetDirectBufferCapacity(buf));
 //        uint8_t *data = (uint8_t *) env->GetDirectBufferAddress(buf);
