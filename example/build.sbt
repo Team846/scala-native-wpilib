@@ -104,7 +104,9 @@ val crossCompileSettings = if (true) {
     nativeLink in Test := (nativeLink in NativeTest).value,
     nativeTarget := "arm-frc-linux-gnueabi",
     nativeCompileOptions ++= Seq(
-      "-funwind-tables", "-target", "armv7-frc-linux-gnueabi", "-Wno-override-module", "--sysroot=/usr/local/arm-frc-linux-gnueabi",
+      "-funwind-tables", "-target", "armv7a-frc-linux-gnueabi",
+      "-mfpu=neon", "-mfloat-abi=soft",
+      "--sysroot=/usr/local/arm-frc-linux-gnueabi",
       s"-I${(libunwindFolder / "include").abs}", s"-I${(librtFolder / "include").abs}", s"-I${(boehmFolder / "include").abs}",
       "-I/usr/local/arm-frc-linux-gnueabi/include/c++/5.5.0", "-I/usr/local/arm-frc-linux-gnueabi/include/c++/5.5.0/arm-frc-linux-gnueabi",
       "-I/Users/shadaj/external-dev/allwpilib/wpilibj/src/arm-linux-jni",
@@ -123,3 +125,5 @@ val crossCompileSettings = if (true) {
 } else Seq.empty
 
 crossCompileSettings
+
+// rm -f FRCUserProgram; mv scala-native FRCUserProgram; . /etc/profile.d/natinst-path.sh; chown lvuser FRCUserProgram; setcap 'cap_sys_nice=pe' FRCUserProgram; chmod a+x FRCUserProgram; /usr/local/frc/bin/frcKillRobot.sh -t -r
