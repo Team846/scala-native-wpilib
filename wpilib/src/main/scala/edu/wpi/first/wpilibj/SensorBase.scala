@@ -7,7 +7,7 @@
 
 package edu.wpi.first.wpilibj
 
-//import edu.wpi.first.wpilibj.hal.AnalogJNI
+import edu.wpi.first.wpilibj.hal.AnalogJNI
 import edu.wpi.first.wpilibj.hal.ConstantsJNI
 import edu.wpi.first.wpilibj.hal.DIOJNI
 //import edu.wpi.first.wpilibj.hal.PDPJNI
@@ -116,27 +116,27 @@ object SensorBase {
     }
   }
 
-//  /**
-//    * Check that the analog input number is value. Verify that the analog input number is one of the
-//    * legal channel numbers. Channel numbers are 0-based.
-//    *
-//    * @param channel The channel number to check.
-//    */
-//  def checkAnalogInputChannel(channel: Int): Unit = {
-//    if (!AnalogJNI.checkAnalogInputChannel(channel)) {
-//      val buf = new StringBuilder
-//      buf.append("Requested analog input channel is out of range. Minimum: 0, Maximum: ").append(kAnalogInputChannels).append(", Requested: ").append(channel)
-//      throw new IndexOutOfBoundsException(buf.toString)
-//    }
-//  }
-//
-//  def checkAnalogOutputChannel(channel: Int): Unit = {
-//    if (!AnalogJNI.checkAnalogOutputChannel(channel)) {
-//      val buf = new StringBuilder
-//      buf.append("Requested analog output channel is out of range. Minimum: 0, Maximum: ").append(kAnalogOutputChannels).append(", Requested: ").append(channel)
-//      throw new IndexOutOfBoundsException(buf.toString)
-//    }
-//  }
+  /**
+    * Check that the analog input number is value. Verify that the analog input number is one of the
+    * legal channel numbers. Channel numbers are 0-based.
+    *
+    * @param channel The channel number to check.
+    */
+  def checkAnalogInputChannel(channel: Int): Unit = {
+    if (!AnalogJNI.checkAnalogInputChannel(channel)) {
+      val buf = new StringBuilder
+      buf.append("Requested analog input channel is out of range. Minimum: 0, Maximum: ").append(kAnalogInputChannels).append(", Requested: ").append(channel)
+      throw new IndexOutOfBoundsException(buf.toString)
+    }
+  }
+
+  def checkAnalogOutputChannel(channel: Int): Unit = {
+    if (!AnalogJNI.checkAnalogOutputChannel(channel)) {
+      val buf = new StringBuilder
+      buf.append("Requested analog output channel is out of range. Minimum: 0, Maximum: ").append(kAnalogOutputChannels).append(", Requested: ").append(channel)
+      throw new IndexOutOfBoundsException(buf.toString)
+    }
+  }
 
 //  /**
 //    * Verify that the solenoid channel number is within limits. Channel numbers are 0-based.

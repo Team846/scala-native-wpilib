@@ -106,7 +106,7 @@ object JNIMacrosImpl {
     val enclosingObject = method.owner
     val linkLibrary = c.Expr[String](enclosingObject.annotations.find { annot =>
       annot.tree.tpe.typeSymbol.fullName == "com.lynbrookrobotics.scalanativejni.jnilib"
-    }.get.tree.children.last)
+    }.getOrElse(c.abort(c.enclosingPosition, "You need to specify the linking library through @jnilib")).tree.children.last)
 
     val objectPath = enclosingObject.fullName
     val methodName = method.name.toString
