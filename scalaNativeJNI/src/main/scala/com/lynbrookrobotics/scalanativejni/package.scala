@@ -30,6 +30,8 @@ package object scalanativejni {
 
   def autoClass[T]: JClass = macro JNIMacrosImpl.autoClassImpl[T]
 
+  val utf16Charset = Charset.forName("UTF-16")
+
   def newString(env: Env, cstr: CString, len: Int): String = {
     val bytesCount = len * 2
     val bytes = new Array[Byte](bytesCount)
@@ -41,11 +43,11 @@ package object scalanativejni {
       c += 2
     }
 
-    new String(bytes, Charset.forName("UTF-16"))
+    new String(bytes, utf16Charset)
   }
 
   def getStringCritical(env: Env, str: String): Ptr[Byte] = {
-    val bytes = str.getBytes(Charset.forName("UTF-16"))
+    val bytes = str.getBytes(utf16Charset)
     val cstr  = stdlib.malloc(bytes.length + 2)
 
     var c = 0
@@ -175,7 +177,7 @@ package object scalanativejni {
   val vm: VM = MockJNI.createVM(env)
   val cls: Cls = null
 
-  def jni[T]: T = macro JNIMacrosImpl.jniImpl[T]
+  def jni[T]: T = throw new IllegalStateException("bad")
 
   @extern
   object MockJNI {

@@ -3,7 +3,9 @@ package com.lynbrookrobotics.scalanativejni
 import scala.language.experimental.macros
 import scala.reflect.macros.whitebox
 
-case class jnilib(library: String) extends scala.annotation.StaticAnnotation
+class jnilib(library: String) extends scala.annotation.StaticAnnotation {
+  def macroTransform(annottees: Any*): Any = macro JNIMacrosImpl.jnilibImpl
+}
 
 object JNIMacrosImpl {
   def autoClassImpl[T: c.WeakTypeTag](c: whitebox.Context): c.Tree = {
@@ -97,45 +99,56 @@ object JNIMacrosImpl {
     )
   }
 
-  def jniImpl[T: c.WeakTypeTag](c: whitebox.Context): c.Expr[T] = {
+  def jnilibImpl(c: whitebox.Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
     import c.universe._
 
-    val method = c.internal.enclosingOwner.asMethod
-    val paramss: List[Symbol] = method.paramLists.flatten
+    val inputs = annottees.map(_.tree).toList
+    val outputs = inputs match {
+      case (obj @ q"..$_ object $objname extends ..$parents { $self => ..$stats }") :: _ =>
+        val newStats = stats.flatMap {
+          case rawmethod@q"..$_ def $methodName(...$rawparamss): $tpt = jni" =>
+            val method = c.typecheck(rawmethod.asInstanceOf[c.Tree])
+            val paramssTrees = rawparamss.flatten.map(p => c.typecheck(p.asInstanceOf[c.Tree]))
+            val paramss = paramssTrees.map(_.symbol)
+            val linkLibrary = c.prefix.tree match {
+              case q"new jnilib($b)" => c.Expr[String](q"$b")
+            }
 
-    val enclosingObject = method.owner
-    val linkLibrary = c.Expr[String](enclosingObject.annotations.find { annot =>
-      annot.tree.tpe.typeSymbol.fullName == "com.lynbrookrobotics.scalanativejni.jnilib"
-    }.getOrElse(c.abort(c.enclosingPosition, "You need to specify the linking library through @jnilib")).tree.children.last)
+            val objectPath = method.symbol.owner.fullName
 
-    val objectPath = enclosingObject.fullName
-    val methodName = method.name.toString
+            val jniName = s"Java_${objectPath.replace('.', '_')}_${objname}_$methodName"
 
-    val jniName = s"Java_${objectPath.replace('.', '_')}_$methodName"
+            val jniParams = paramss.map { param =>
+              q"val ${param.name.asInstanceOf[TermName]}: ${param.typeSignature}"
+            }
 
-    val jniParams = paramss.map { param =>
-      q"val ${param.name.asInstanceOf[TermName]}: ${param.typeSignature}"
+            val paramExprs = rawparamss.flatMap { list =>
+              list.map {
+                case q"$_ val $param: $_ = $_" => q"$param"
+              }
+            }
+
+            val linkerName = TermName(methodName.asInstanceOf[TermName].encoded + "_linker")
+
+            val linkerObject =
+              q"""
+                 @_root_.scala.scalanative.native.extern @_root_.scala.scalanative.native.link(${linkLibrary.tree}) object $linkerName {
+                   @_root_.scala.scalanative.native.name(${Literal(Constant(jniName))})
+                   def native(env: _root_.com.lynbrookrobotics.scalanativejni.Env,
+                              cls: _root_.com.lynbrookrobotics.scalanativejni.Cls,
+                              ..$jniParams): ${method.symbol.asMethod.returnType.typeSymbol} =
+                     _root_.scala.scalanative.native.extern
+                 }
+               """
+
+            Seq(q"def $methodName(...$rawparamss): $tpt = $linkerName.native(_root_.com.lynbrookrobotics.scalanativejni.env, _root_.com.lynbrookrobotics.scalanativejni.cls, ..$paramExprs)", linkerObject)
+          case o =>
+            Seq(o)
+        }
+
+        q"object $objname extends ..$parents { $self => ..$newStats }"
     }
 
-    val paramExprs = paramss.map { p =>
-      q"${p.asTerm.name}"
-    }
-
-    val linkerObject =
-      q"""
-         @_root_.scala.scalanative.native.extern @_root_.scala.scalanative.native.link(${linkLibrary.tree}) object linker {
-           @_root_.scala.scalanative.native.name(${Literal(Constant(jniName))})
-           def native(env: _root_.com.lynbrookrobotics.scalanativejni.Env,
-                      cls: _root_.com.lynbrookrobotics.scalanativejni.Cls,
-                      ..$jniParams): ${method.returnType.typeSymbol} =
-             _root_.scala.scalanative.native.extern
-         }
-       """
-
-    c.Expr[T](
-      q"""
-         $linkerObject
-         linker.native(_root_.com.lynbrookrobotics.scalanativejni.env, _root_.com.lynbrookrobotics.scalanativejni.cls, ..$paramExprs)
-       """)
+    c.Expr[Any](Block(outputs, Literal(Constant(()))))
   }
 }
