@@ -6,6 +6,16 @@ import edu.wpi.first.wpilibj.can._
 import edu.wpi.first.wpilibj.util.{AllocationException, BoundaryException, HalHandleException, UncleanStatusException}
 
 class JNIWrapper {
+  if (!JNIWrapper.hasLoaded) {
+    JNILoad.JNI_OnLoad(vm, null)
+    JNIWrapper.hasLoaded = true
+  }
+
+  def getPort(channel: Byte): Int = JNIWrapper.getPort(channel)
+}
+
+@jnilib("wpilibJNI")
+object JNIWrapper {
   // HALUtil exceptions
   registerClass(autoClass[RuntimeException])
   registerClass(autoClass[IllegalArgumentException])
@@ -22,17 +32,7 @@ class JNIWrapper {
   registerClass(autoClass[MatchInfoData]) // HAL
   registerClass(autoClass[PWMConfigDataResult]) // PWM
   registerClass(autoClass[AccumulatorResult]) // Analog
-
-  if (!JNIWrapper.hasLoaded) {
-    JNILoad.JNI_OnLoad(vm, null)
-    JNIWrapper.hasLoaded = true
-  }
-
-  def getPort(channel: Byte): Int = JNIWrapper.getPort(channel)
-}
-
-@jnilib("wpilibJNI")
-object JNIWrapper {
+  
   def getPort(channel: Byte): Int = jni
 
   private[JNIWrapper] var hasLoaded = false
