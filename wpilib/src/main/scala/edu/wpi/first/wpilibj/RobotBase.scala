@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj.util.WPILibVersion
   */
 abstract class RobotBase protected() {
   // originally, these happen before classloading
+  System.out.println("********** Robot program starting **********")
   RobotBase.initializeHardwareConfiguration()
   HAL.report(tResourceType.kResourceType_Language, tInstances.kLanguage_Java)
 
