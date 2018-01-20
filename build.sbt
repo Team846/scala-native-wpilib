@@ -5,6 +5,8 @@ scalaVersion in ThisBuild := "2.11.12"
 publishMavenStyle in ThisBuild := true
 publishTo in ThisBuild := Some(Resolver.file("gh-pages-repo", baseDirectory.value / ".." / "repo"))
 
+resolvers in ThisBuild += "Funky-Repo" at "http://lynbrookrobotics.com/repo"
+
 lazy val scalaNativeWpilib = project.in(file("."))
   .aggregate(
     scalaNativeJNINativeLib,
