@@ -2,6 +2,20 @@ organization in ThisBuild := "com.lynbrookrobotics"
 
 scalaVersion in ThisBuild := "2.11.12"
 
+publishMavenStyle in ThisBuild := true
+publishTo in ThisBuild := Some(Resolver.file("gh-pages-repo", baseDirectory.value / ".." / "repo"))
+
+lazy val scalaNativeWpilib = project.in(file("."))
+  .aggregate(
+    scalaNativeJNINativeLib,
+    scalaNativeJNI,
+    wpilib,
+    phoenix
+  ).settings(
+  publish := {},
+  publishLocal := {}
+)
+
 lazy val scalaNativeJNINativeLib = project
 
 lazy val scalaNativeJNI = project.dependsOn(scalaNativeJNINativeLib).settings(
