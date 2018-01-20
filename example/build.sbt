@@ -13,9 +13,6 @@ import scala.scalanative.sbtplugin.Utilities._
 
 scalacOptions ++= Seq("-target:jvm-1.8")
 
-//libraryDependencies += "org.scala-native" %%% "test-interface" % "0.3.7-SNAPSHOT"
-//testFrameworks += new TestFramework("tests.NativeFramework")
-
 val crossCompileSettings = if (true) {
   Seq(
     // fork to link with gcc instead of clang
@@ -71,17 +68,18 @@ val crossCompileSettings = if (true) {
       "--sysroot=/usr/local/arm-frc-linux-gnueabi",
       s"-I${(libunwindFolder / "include").abs}", s"-I${(librtFolder / "include").abs}", s"-I${(boehmFolder / "include").abs}",
       "-I/usr/local/arm-frc-linux-gnueabi/include/c++/5.5.0", "-I/usr/local/arm-frc-linux-gnueabi/include/c++/5.5.0/arm-frc-linux-gnueabi",
-      "-I/Users/shadaj/external-dev/allwpilib/ni-libraries/include",
       "-I/Users/shadaj/external-dev/allwpilib/wpilibj/src/arm-linux-jni",
-      "-I/Users/shadaj/external-dev/allwpilib/wpilibj/src/arm-linux-jni/linux",
-      "-I/Users/shadaj/wpilib/cpp/current/include"
+      "-I/Users/shadaj/external-dev/allwpilib/wpilibj/src/arm-linux-jni/linux"
     ),
     nativeLinkingOptions ++= Seq(
       "-lm", "-lc", "-lstdc++", "-lpthread", // system stuff,
+      // transitive dependencies
       "-lwpiHal", "-lwpiutil", "-l:libniriosession.so.17.0.0", "-l:libniriodevenum.so.17.0.0",
       "-l:libRoboRIO_FRC_ChipObject.so.18.0.0", "-l:libvisa.so", "-l:libFRC_NetworkCommunication.so.18.0.0",
       "-l:libNiFpga.so.17.0.0", "-l:libNiFpgaLv.so.17.0.0", "-l:libNiRioSrv.so.17.0.0",
+
       "-L/Users/shadaj/wpilib/common/current/lib/linux/athena/shared",
+      "-L/Users/shadaj/wpilib/user/java/lib",
       "-L/Users/shadaj/wpilib/cpp/current/reflib/linux/athena/shared"
     )
   )
@@ -89,4 +87,5 @@ val crossCompileSettings = if (true) {
 
 crossCompileSettings
 
+// after copying, run:
 // rm -f FRCUserProgram; mv scala-native FRCUserProgram; . /etc/profile.d/natinst-path.sh; chown lvuser FRCUserProgram; setcap 'cap_sys_nice=pe' FRCUserProgram; chmod a+x FRCUserProgram; /usr/local/frc/bin/frcKillRobot.sh -t -r

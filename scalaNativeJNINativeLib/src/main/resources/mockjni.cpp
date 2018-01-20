@@ -1,13 +1,5 @@
 #include <jni.h>
 #include <stdlib.h>
-#include <malloc.h>
-#include <stdio.h>
-#include <cstdarg>
-#include <support/jni_util.h>
-#include <wchar.h>
-#include <pthread.h>
-
-using namespace wpi::java;
 
 extern "C" {
     JNIEnv* createEnv(jclass (JNICALL *JNIEnv_FindClass) (JNIEnv *env, const char *name),
@@ -82,24 +74,5 @@ extern "C" {
     }
 
     void testVM(JavaVM *vm, JNIEnv* env) {
-        auto thread = pthread_self();
-        struct sched_param param;
-        int policy;
-
-        pthread_getschedparam(thread, &policy, &param);
-        param.sched_priority = 99;
-
-        pthread_setschedparam(thread, policy, &param);
-//        printf("hello!\n");
-//        env->NewObject((jclass) 5, (jmethodID) 5, "foobar");
-//        JException foo = JException(env, "java/lang/RuntimeException");
-//        printf("created exception!\n");
-//        foo.Throw(env, "hallo");
-
-//        printf("initing %p %lld\n", env->GetDirectBufferAddress(buf), env->GetDirectBufferCapacity(buf));
-//        uint8_t *data = (uint8_t *) env->GetDirectBufferAddress(buf);
-//        data[0] = 5;
-//        data[1] = 7;
-        //Java_edu_wpi_first_wpilibj_hal_PWMJNI_initializePWMPort(env, NULL, (jint) 33554688);
     }
 }
