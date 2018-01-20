@@ -2,9 +2,14 @@ package com.ctre.phoenix
 
 import scala.scalanative.native._
 import com.lynbrookrobotics.scalanativejni._
+import edu.wpi.first.wpilibj.{AccumulatorResult, PWMConfigDataResult}
+import edu.wpi.first.wpilibj.can._
+import edu.wpi.first.wpilibj.hal.MatchInfoData
+import edu.wpi.first.wpilibj.util.{AllocationException, BoundaryException, HalHandleException, UncleanStatusException}
 
 class CTREJNIWrapper {
   if (!CTREJNIWrapper.libraryLoaded) {
+    DL.dlopen(c"libCTRE_PhoenixCCI.so", 0x002 /* RTLD_NOW */)
     JNILoad.JNI_OnLoad(vm, null)
     CTREJNIWrapper.libraryLoaded = true
   }
@@ -16,15 +21,26 @@ class CTREJNIWrapper {
 
 @jnilib("CTRE_PhoenixCCI")
 object CTREJNIWrapper {
+  // HALUtil exceptions
+  registerClass(autoClass[RuntimeException])
+  registerClass(autoClass[IllegalArgumentException])
+  registerClass(autoClass[BoundaryException])
+  registerClass(autoClass[AllocationException])
+  registerClass(autoClass[HalHandleException])
+  registerClass(autoClass[CANInvalidBufferException])
+  registerClass(autoClass[CANMessageNotFoundException])
+  registerClass(autoClass[CANMessageNotAllowedException])
+  registerClass(autoClass[CANNotInitializedException])
+  registerClass(autoClass[UncleanStatusException])
+
+  registerClass(autoClass[CANStatus]) // CAN
+  registerClass(autoClass[MatchInfoData]) // HAL
+  registerClass(autoClass[PWMConfigDataResult]) // PWM
+  registerClass(autoClass[AccumulatorResult]) // Analog
+
   var libraryLoaded = false
 
   def getPortWithModule(module: Byte, channel: Byte): Int = jni
 
   def getPort(channel: Byte): Int = jni
-}
-
-@extern @link("CTRE_PhoenixCCI")
-object JNILoad {
-  @name("JNI_OnLoad")
-  def JNI_OnLoad(vm: VM, reserved: Ptr[Unit]): Int = extern
 }

@@ -132,7 +132,7 @@ object JNIMacrosImpl {
 
             val linkerObject =
               q"""
-                 @_root_.scala.scalanative.native.extern @_root_.scala.scalanative.native.link(${linkLibrary.tree}) object $linkerName {
+                 @_root_.scala.scalanative.native.extern object $linkerName {
                    @_root_.scala.scalanative.native.name(${Literal(Constant(jniName))})
                    def native(env: _root_.com.lynbrookrobotics.scalanativejni.Env,
                               cls: _root_.com.lynbrookrobotics.scalanativejni.Cls,

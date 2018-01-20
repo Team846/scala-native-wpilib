@@ -5,8 +5,11 @@ import edu.wpi.first.wpilibj.{AccumulatorResult, PWMConfigDataResult}
 import edu.wpi.first.wpilibj.can._
 import edu.wpi.first.wpilibj.util.{AllocationException, BoundaryException, HalHandleException, UncleanStatusException}
 
+import scala.scalanative.native._
+
 class JNIWrapper {
   if (!JNIWrapper.hasLoaded) {
+    DL.dlopen(c"libwpilibJNI.so", 0x002 /* RTLD_NOW */)
     JNILoad.JNI_OnLoad(vm, null)
     JNIWrapper.hasLoaded = true
   }

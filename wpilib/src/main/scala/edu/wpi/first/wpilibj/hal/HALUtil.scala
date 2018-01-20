@@ -41,8 +41,3 @@ object HALUtil extends JNIWrapper {
   def getHALstrerror: String = getHALstrerror(getHALErrno)
 }
 
-@extern @link("wpilibJNI")
-object JNILoad {
-  @name("JNI_OnLoad")
-  def JNI_OnLoad(vm: VM, reserved: Ptr[Unit]): Int = extern
-}

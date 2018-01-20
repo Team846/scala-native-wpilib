@@ -60,7 +60,6 @@ val crossCompileSettings = if (true) {
 
       outpath
     },
-    nativeLink in Test := (nativeLink in NativeTest).value,
     nativeTarget := "arm-frc-linux-gnueabi",
     nativeCompileOptions ++= Seq(
       "-funwind-tables", "-target", "armv7a-frc-linux-gnueabi",
@@ -72,9 +71,9 @@ val crossCompileSettings = if (true) {
       "-I/Users/shadaj/external-dev/allwpilib/wpilibj/src/arm-linux-jni/linux"
     ),
     nativeLinkingOptions ++= Seq(
-      "-lm", "-lc", "-lstdc++", "-lpthread", // system stuff,
+      "-lm", "-lc", "-lstdc++", "-lpthread", "-ldl", // system stuff,
       // transitive dependencies
-      "-lwpiHal", "-lwpiutil", "-l:libniriosession.so.17.0.0", "-l:libniriodevenum.so.17.0.0",
+      "-lwpilibJNI", "-lCTRE_PhoenixCCI", "-lwpiHal", "-lwpiutil", "-l:libniriosession.so.17.0.0", "-l:libniriodevenum.so.17.0.0",
       "-l:libRoboRIO_FRC_ChipObject.so.18.0.0", "-l:libvisa.so", "-l:libFRC_NetworkCommunication.so.18.0.0",
       "-l:libNiFpga.so.17.0.0", "-l:libNiFpgaLv.so.17.0.0", "-l:libNiRioSrv.so.17.0.0",
 
