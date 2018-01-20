@@ -20,7 +20,7 @@ abstract class GenericHID(val m_port: Int) {
     *
     * @return the x position of the HID
     */
-  final def getX: Double = getX(GenericHID.Hand.kRight)
+  final def getX(): Double = getX(GenericHID.Hand.kRight)
 
   /**
     * Get the x position of HID.
@@ -35,7 +35,7 @@ abstract class GenericHID(val m_port: Int) {
     *
     * @return the y position
     */
-  final def getY: Double = getY(GenericHID.Hand.kRight)
+  final def getY(): Double = getY(GenericHID.Hand.kRight)
 
   /**
     * Get the y position of the HID.

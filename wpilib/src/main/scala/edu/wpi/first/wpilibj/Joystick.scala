@@ -148,7 +148,7 @@ class Joystick(val port: Int) extends GenericHID(port) {
     *
     * @return the z position
     */
-  def getZ: Double = getRawAxis(m_axes(Joystick.Axis.kZ.value))
+  def getZ(): Double = getRawAxis(m_axes(Joystick.Axis.kZ.value))
 
   /**
     * Get the twist value of the current joystick. This depends on the mapping of the joystick
@@ -178,11 +178,11 @@ class Joystick(val port: Int) extends GenericHID(port) {
     */
   @deprecated def getAxis(axis: Joystick.AxisType): Double = axis match {
     case Joystick.AxisType.kX =>
-      getX
+      getX()
     case Joystick.AxisType.kY =>
-      getY
+      getY()
     case Joystick.AxisType.kZ =>
-      getZ
+      getZ()
     case Joystick.AxisType.kTwist =>
       getTwist
     case Joystick.AxisType.kThrottle =>

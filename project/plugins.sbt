@@ -1,1 +1,1 @@
-addSbtPlugin("org.scala-native" % "sbt-scala-native" % "0.3.7-SNAPSHOT")
+addSbtPlugin("org.scala-native" % "sbt-scala-native" % "0.3.7-arm-jni-threads")

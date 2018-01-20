@@ -4,6 +4,8 @@ nativeMode := "debug"
 
 nativeGC := "boehm"
 
+libraryDependencies += "com.lynbrookrobotics" %%% "potassium-frc" % "0.1.0-6791467e"
+
 val boehmFolder = file("/Users/shadaj/cross-compile/bdwgc")
 val libunwindFolder = file("/Users/shadaj/cross-compile/libunwind-1.2.1")
 val librtFolder = file("/Users/shadaj/cross-compile/re2")
