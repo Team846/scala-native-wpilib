@@ -798,7 +798,7 @@ object DriverStation {
     *
     * @return The DriverStation.
     */
-  def getInstance: DriverStation = DriverStation.instance
+  def getInstance(): DriverStation = DriverStation.instance
 
   /**
     * Report error to Driver Station. Optionally appends Stack trace

@@ -4,6 +4,7 @@ nativeMode := "debug"
 
 nativeGC := "boehm"
 
+libraryDependencies += "com.lynbrookrobotics" %%% "potassium-commons" % "0.1.0-fb92ab65"
 libraryDependencies += "com.lynbrookrobotics" %%% "potassium-frc" % "0.1.0-fb92ab65"
 
 val boehmFolder = file("/Users/shadaj/cross-compile/bdwgc")
