@@ -595,33 +595,35 @@ class DriverStation private() extends RobotState.Interface {
     * @return true if there is new data, otherwise false
     */
   def waitForData(timeout: Double): Boolean = {
-    val startTime = RobotController.getFPGATime
-    val timeoutMicros = (timeout * 1000000).toLong
-    m_waitForDataMutex.lock()
-    try {
-      val currentCount = m_waitForDataCount
-      while ( {
-        m_waitForDataCount == currentCount
-      }) if (timeout > 0) {
-        val now = RobotController.getFPGATime
-        if (now < startTime + timeoutMicros) { // We still have time to wait
-          val signaled = m_waitForDataCond.await(startTime + timeoutMicros - now, TimeUnit.MICROSECONDS)
-          if (!signaled) { // Return false if a timeout happened
-            return false
-          }
-        }
-        else { // Time has elapsed.
-          return false
-        }
-      }
-      else m_waitForDataCond.await()
-      // Return true if we have received a proper signal
-      true
-    } catch {
-      case ex: InterruptedException =>
-        // return false on a thread interrupt
-        false
-    } finally m_waitForDataMutex.unlock()
+    HAL.waitForDSDataTimeout(timeout)
+    // TODO FIX ME AYEEEE
+//    val startTime = RobotController.getFPGATime
+//    val timeoutMicros = (timeout * 1000000).toLong
+//    m_waitForDataMutex.lock()
+//    try {
+//      val currentCount = m_waitForDataCount
+//      while ( {
+//        m_waitForDataCount == currentCount
+//      }) if (timeout > 0) {
+//        val now = RobotController.getFPGATime
+//        if (now < startTime + timeoutMicros) { // We still have time to wait
+//          val signaled = m_waitForDataCond.await(startTime + timeoutMicros - now, TimeUnit.MICROSECONDS)
+//          if (!signaled) { // Return false if a timeout happened
+//            return false
+//          }
+//        }
+//        else { // Time has elapsed.
+//          return false
+//        }
+//      }
+//      else m_waitForDataCond.await()
+//      // Return true if we have received a proper signal
+//      true
+//    } catch {
+//      case ex: InterruptedException =>
+//        // return false on a thread interrupt
+//        false
+//    } finally m_waitForDataMutex.unlock()
   }
 
   /**
@@ -910,7 +912,7 @@ object DriverStation {
     *
     * @return The DriverStation.
     */
-  def getInstance: DriverStation = DriverStation.instance
+  def getInstance(): DriverStation = DriverStation.instance
 
   /**
     * Report error to Driver Station. Optionally appends Stack trace
