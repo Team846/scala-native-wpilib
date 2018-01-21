@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.hal.DIOJNI
 import edu.wpi.first.wpilibj.hal.PWMJNI
 import edu.wpi.first.wpilibj.hal.PortsJNI
 //import edu.wpi.first.wpilibj.hal.RelayJNI
-//import edu.wpi.first.wpilibj.hal.SolenoidJNI
+import edu.wpi.first.wpilibj.hal.SolenoidJNI
 
 /**
   * Base class for all sensors. Stores most recent status information as well as containing utility
@@ -63,28 +63,28 @@ object SensorBase {
   val kPCMModules: Int = PortsJNI.getNumPCMModules
   private var m_defaultSolenoidModule = 0
 
-//  /**
-//    * Set the default location for the Solenoid module.
-//    *
-//    * @param moduleNumber The number of the solenoid module to use.
-//    */
-//  def setDefaultSolenoidModule(moduleNumber: Int): Unit = {
-//    checkSolenoidModule(moduleNumber)
-//    SensorBase.m_defaultSolenoidModule = moduleNumber
-//  }
+  /**
+    * Set the default location for the Solenoid module.
+    *
+    * @param moduleNumber The number of the solenoid module to use.
+    */
+  def setDefaultSolenoidModule(moduleNumber: Int): Unit = {
+    checkSolenoidModule(moduleNumber)
+    SensorBase.m_defaultSolenoidModule = moduleNumber
+  }
 
-//  /**
-//    * Verify that the solenoid module is correct.
-//    *
-//    * @param moduleNumber The solenoid module module number to check.
-//    */
-//  def checkSolenoidModule(moduleNumber: Int): Unit = {
-//    if (!SolenoidJNI.checkSolenoidModule(moduleNumber)) {
-//      val buf = new StringBuilder
-//      buf.append("Requested solenoid module is out of range. Minimum: 0, Maximum: ").append(kPCMModules).append(", Requested: ").append(moduleNumber)
-//      throw new IndexOutOfBoundsException(buf.toString)
-//    }
-//  }
+  /**
+    * Verify that the solenoid module is correct.
+    *
+    * @param moduleNumber The solenoid module module number to check.
+    */
+  def checkSolenoidModule(moduleNumber: Int): Unit = {
+    if (!SolenoidJNI.checkSolenoidModule(moduleNumber)) {
+      val buf = new StringBuilder
+      buf.append("Requested solenoid module is out of range. Minimum: 0, Maximum: ").append(kPCMModules).append(", Requested: ").append(moduleNumber)
+      throw new IndexOutOfBoundsException(buf.toString)
+    }
+  }
 
   /**
     * Check that the digital channel number is valid. Verify that the channel number is one of the
@@ -138,18 +138,18 @@ object SensorBase {
     }
   }
 
-//  /**
-//    * Verify that the solenoid channel number is within limits. Channel numbers are 0-based.
-//    *
-//    * @param channel The channel number to check.
-//    */
-//  def checkSolenoidChannel(channel: Int): Unit = {
-//    if (!SolenoidJNI.checkSolenoidChannel(channel)) {
-//      val buf = new StringBuilder
-//      buf.append("Requested solenoid channel is out of range. Minimum: 0, Maximum: ").append(kSolenoidChannels).append(", Requested: ").append(channel)
-//      throw new IndexOutOfBoundsException(buf.toString)
-//    }
-//  }
+  /**
+    * Verify that the solenoid channel number is within limits. Channel numbers are 0-based.
+    *
+    * @param channel The channel number to check.
+    */
+  def checkSolenoidChannel(channel: Int): Unit = {
+    if (!SolenoidJNI.checkSolenoidChannel(channel)) {
+      val buf = new StringBuilder
+      buf.append("Requested solenoid channel is out of range. Minimum: 0, Maximum: ").append(kSolenoidChannels).append(", Requested: ").append(channel)
+      throw new IndexOutOfBoundsException(buf.toString)
+    }
+  }
 
 //  /**
 //    * Verify that the power distribution channel number is within limits. Channel numbers are

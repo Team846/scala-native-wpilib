@@ -15,6 +15,7 @@ class JNIWrapper {
   }
 
   def getPort(channel: Byte): Int = JNIWrapper.getPort(channel)
+  def getPortWithModule(module: Byte, channel: Byte): Int = JNIWrapper.getPortWithModule(module, channel)
 }
 
 @jnilib("wpilibJNI")
@@ -35,7 +36,8 @@ object JNIWrapper {
   registerClass(autoClass[MatchInfoData]) // HAL
   registerClass(autoClass[PWMConfigDataResult]) // PWM
   registerClass(autoClass[AccumulatorResult]) // Analog
-  
+
+  def getPortWithModule(module: Byte, channel: Byte): Int = jni
   def getPort(channel: Byte): Int = jni
 
   private[JNIWrapper] var hasLoaded = false
