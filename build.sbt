@@ -24,7 +24,11 @@ lazy val scalaNativeJNI = project.dependsOn(scalaNativeJNINativeLib).settings(
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 )
 
-lazy val wpilib = project.dependsOn(scalaNativeJNI).settings(
+lazy val ntcore = project.dependsOn(scalaNativeJNI).settings(
+  addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+)
+
+lazy val wpilib = project.dependsOn(scalaNativeJNI, ntcore).settings(
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 )
 

@@ -152,6 +152,8 @@ abstract class RobotBase protected() {
           output.write("Java ".getBytes)
           output.write(WPILibVersion.Version.getBytes)
         } finally if (output != null) output.close()
+      } catch {
+        case _: Throwable =>
       }
     } catch {
       case ex: IOException =>

@@ -15,13 +15,13 @@ class MatchInfoData {
     * Stores the event name.
     */
   @SuppressWarnings(Array("MemberName"))
-  var eventName: String = null
+  var eventName: String = ""
 
   /**
     * Stores the game specific message.
     */
   @SuppressWarnings(Array("MemberName"))
-  var gameSpecificMessage: String = null
+  var gameSpecificMessage: String = ""
 
   /**
     * Stores the match number.

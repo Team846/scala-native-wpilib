@@ -8,6 +8,14 @@
 package edu.wpi.first.wpilibj
 
 import java.nio.ByteBuffer
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.Condition
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
+
+//import edu.wpi.first.networktables.NetworkTable
+//import edu.wpi.first.networktables.NetworkTableEntry
+//import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.hal.AllianceStationID
 import edu.wpi.first.wpilibj.hal.ControlWord
 import edu.wpi.first.wpilibj.hal.HAL
@@ -21,33 +29,50 @@ import edu.wpi.first.wpilibj.hal.PowerJNI
   * variable.
   */
 class DriverStation private() extends RobotState.Interface {
-  private var m_nextMessageTime = 0.0
+  private[wpilibj] class HALJoystickButtons {
+    var m_buttons = 0
+    var m_count = 0
+  }
 
+  private[wpilibj] class HALJoystickAxes private[wpilibj](val count: Int) {
+    var m_axes: Array[Float] = new Array[Float](count)
+    var m_count = 0
+  }
+
+  private[wpilibj] class HALJoystickPOVs private[wpilibj](val count: Int) {
+    var m_povs: Array[Short] = new Array[Short](count)
+    var m_count = 0
+  }
+
+  private var m_nextMessageTime = 0.0
+  
   // Joystick User Data
   private var m_joystickAxes = new Array[HALJoystickAxes](DriverStation.kJoystickPorts)
   private var m_joystickPOVs = new Array[HALJoystickPOVs](DriverStation.kJoystickPorts)
   private var m_joystickButtons = new Array[HALJoystickButtons](DriverStation.kJoystickPorts)
   private var m_matchInfo = new MatchInfoData
-
+  
   // Joystick Cached Data
   private var m_joystickAxesCache = new Array[HALJoystickAxes](DriverStation.kJoystickPorts)
   private var m_joystickPOVsCache = new Array[HALJoystickPOVs](DriverStation.kJoystickPorts)
   private var m_joystickButtonsCache = new Array[HALJoystickButtons](DriverStation.kJoystickPorts)
   private var m_matchInfoCache = new MatchInfoData
-
+  
   // Joystick button rising/falling edge flags
-  private val m_joystickButtonsPressed = new Array[HALJoystickButtons](DriverStation.kJoystickPorts)
-  private val m_joystickButtonsReleased = new Array[HALJoystickButtons](DriverStation.kJoystickPorts)
+  private[wpilibj] val m_joystickButtonsPressed = new Array[HALJoystickButtons](DriverStation.kJoystickPorts)
+  private[wpilibj] val m_joystickButtonsReleased = new Array[HALJoystickButtons](DriverStation.kJoystickPorts)
 
   // preallocated byte buffer for button count
   private val m_buttonCountBuffer = ByteBuffer.allocateDirect(1)
+  private var m_matchDataSender = new DriverStation.MatchDataSender
 
   // Internal Driver Station thread
   private var m_thread = new Thread(new DriverStation.DriverStationTask(this), "FRCDriverStation")
   private var m_threadKeepAlive = true
   final private var m_cacheDataMutex = new Object
-  m_thread.setPriority((Thread.NORM_PRIORITY + Thread.MAX_PRIORITY) / 2)
-  m_thread.start()
+  final private var m_waitForDataMutex = new ReentrantLock
+  final private var m_waitForDataCond = m_waitForDataMutex.newCondition
+  private var m_waitForDataCount = 0
 
   // Robot state status variables
   private var m_userInDisabled = false
@@ -78,20 +103,8 @@ class DriverStation private() extends RobotState.Interface {
     }
   }
 
-  private class HALJoystickButtons {
-    var m_buttons = 0
-    var m_count = 0
-  }
-
-  private class HALJoystickAxes private[wpilibj](val count: Int) {
-    var m_axes: Array[Float] = new Array[Float](count)
-    var m_count = 0
-  }
-
-  private class HALJoystickPOVs private[wpilibj](val count: Int) {
-    var m_povs: Array[Short] = new Array[Short](count)
-    var m_count = 0
-  }
+  m_thread.setPriority((Thread.NORM_PRIORITY + Thread.MAX_PRIORITY) / 2)
+  m_thread.start()
 
   /**
     * Kill the thread.
@@ -535,8 +548,7 @@ class DriverStation private() extends RobotState.Interface {
   def getAlliance: DriverStation.Alliance = {
     val allianceStationID = HAL.getAllianceStation
     if (allianceStationID == null) return DriverStation.Alliance.Invalid
-
-    import edu.wpi.first.wpilibj.hal.AllianceStationID._
+    import AllianceStationID._
     allianceStationID match {
       case Red1 => DriverStation.Alliance.Red
       case Red2 => DriverStation.Alliance.Red
@@ -556,8 +568,7 @@ class DriverStation private() extends RobotState.Interface {
   def getLocation: Int = {
     val allianceStationID = HAL.getAllianceStation
     if (allianceStationID == null) return 0
-
-    import edu.wpi.first.wpilibj.hal.AllianceStationID._
+    import AllianceStationID._
     allianceStationID match {
       case Red1 => 1
       case Blue1 => 1
@@ -584,8 +595,33 @@ class DriverStation private() extends RobotState.Interface {
     * @return true if there is new data, otherwise false
     */
   def waitForData(timeout: Double): Boolean = {
-    val ret = HAL.waitForDSDataTimeout(timeout)
-    ret
+    val startTime = RobotController.getFPGATime
+    val timeoutMicros = (timeout * 1000000).toLong
+    m_waitForDataMutex.lock()
+    try {
+      val currentCount = m_waitForDataCount
+      while ( {
+        m_waitForDataCount == currentCount
+      }) if (timeout > 0) {
+        val now = RobotController.getFPGATime
+        if (now < startTime + timeoutMicros) { // We still have time to wait
+          val signaled = m_waitForDataCond.await(startTime + timeoutMicros - now, TimeUnit.MICROSECONDS)
+          if (!signaled) { // Return false if a timeout happened
+            return false
+          }
+        }
+        else { // Time has elapsed.
+          return false
+        }
+      }
+      else m_waitForDataCond.await()
+      // Return true if we have received a proper signal
+      true
+    } catch {
+      case ex: InterruptedException =>
+        // return false on a thread interrupt
+        false
+    } finally m_waitForDataMutex.unlock()
   }
 
   /**
@@ -647,6 +683,55 @@ class DriverStation private() extends RobotState.Interface {
     m_userInTest = entering
   }
 
+  private def sendMatchData(): Unit = {
+    val alliance = HAL.getAllianceStation
+    var isRedAlliance = false
+    var stationNumber = 1
+    import AllianceStationID._
+    alliance match {
+      case Blue1 =>
+        isRedAlliance = false
+        stationNumber = 1
+      case Blue2 =>
+        isRedAlliance = false
+        stationNumber = 2
+      case Blue3 =>
+        isRedAlliance = false
+        stationNumber = 3
+      case Red1 =>
+        isRedAlliance = true
+        stationNumber = 1
+      case Red2 =>
+        isRedAlliance = true
+        stationNumber = 2
+      case _ =>
+        isRedAlliance = true
+        stationNumber = 3
+    }
+
+    var eventName: String = null
+    var gameSpecificMessage: String = null
+    var matchNumber = 0
+    var replayNumber = 0
+    var matchType = 0
+    m_cacheDataMutex.synchronized {
+      eventName = m_matchInfo.eventName
+      gameSpecificMessage = m_matchInfo.gameSpecificMessage
+      matchNumber = m_matchInfo.matchNumber
+      replayNumber = m_matchInfo.replayNumber
+      matchType = m_matchInfo.matchType
+    }
+
+//    m_matchDataSender.alliance.setBoolean(isRedAlliance)
+//    m_matchDataSender.station.setDouble(stationNumber)
+//    m_matchDataSender.eventName.setString(eventName)
+//    m_matchDataSender.gameSpecificMessage.setString(gameSpecificMessage)
+//    m_matchDataSender.matchNumber.setDouble(matchNumber)
+//    m_matchDataSender.replayNumber.setDouble(replayNumber)
+//    m_matchDataSender.matchType.setDouble(matchType)
+//    m_matchDataSender.controlWord.setDouble(HAL.nativeGetControlWord)
+  }
+
   /**
     * Copy data from the DS task for the user. If no new data exists, it will just be returned,
     * otherwise the data will be copied from the DS polling loop.
@@ -681,7 +766,6 @@ class DriverStation private() extends RobotState.Interface {
           i - 1
         }
       }
-
       // move cache to actual data
       val currentAxes = m_joystickAxes
       m_joystickAxes = m_joystickAxesCache
@@ -696,6 +780,12 @@ class DriverStation private() extends RobotState.Interface {
       m_matchInfo = m_matchInfoCache
       m_matchInfoCache = currentInfo
     }
+
+    m_waitForDataMutex.lock()
+    m_waitForDataCount += 1
+    m_waitForDataCond.signalAll()
+    m_waitForDataMutex.unlock()
+    sendMatchData()
   }
 
   /**
@@ -768,10 +858,10 @@ object DriverStation {
     */
   val kJoystickPorts = 6
 
-  type Alliance = Alliance.Value
   /**
     * The robot alliance that the robot is a part of.
     */
+  type Alliance = Alliance.Value
   object Alliance extends Enumeration {
     val Red, Blue, Invalid = Value
   }
@@ -791,6 +881,28 @@ object DriverStation {
     /* DriverStationTask */
   }
 
+  private class MatchDataSender private[wpilibj]() {
+//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var table = NetworkTableInstance.getDefault.getTable("FMSInfo")
+//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var typeMetadata = table.getEntry(".type")
+//    typeMetadata.forceSetString("FMSInfo")
+//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var gameSpecificMessage = table.getEntry("GameSpecificMessage")
+//    gameSpecificMessage.forceSetString("")
+//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var eventName = table.getEntry("EventName")
+//    eventName.forceSetString("")
+//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var matchNumber = table.getEntry("MatchNumber")
+//    matchNumber.forceSetDouble(0)
+//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var replayNumber = table.getEntry("ReplayNumber")
+//    replayNumber.forceSetDouble(0)
+//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var matchType = table.getEntry("MatchType")
+//    matchType.forceSetDouble(0)
+//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var alliance = table.getEntry("IsRedAlliance")
+//    alliance.forceSetBoolean(true)
+//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var station = table.getEntry("StationNumber")
+//    station.forceSetDouble(1)
+//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var controlWord = table.getEntry("FMSControlData")
+//    controlWord.forceSetDouble(0)
+  }
+
   private val instance = new DriverStation
 
   /**
@@ -798,7 +910,7 @@ object DriverStation {
     *
     * @return The DriverStation.
     */
-  def getInstance(): DriverStation = DriverStation.instance
+  def getInstance: DriverStation = DriverStation.instance
 
   /**
     * Report error to Driver Station. Optionally appends Stack trace
@@ -841,9 +953,7 @@ object DriverStation {
   }
 
   private def reportErrorImpl(isError: Boolean, code: Int, error: String, printTrace: Boolean): Unit = {
-    val trace = Thread.currentThread().getStackTrace
-
-    reportErrorImpl(isError, code, error, printTrace, trace, 3)
+    reportErrorImpl(isError, code, error, printTrace, Thread.currentThread.getStackTrace, 3)
   }
 
   private def reportErrorImpl(isError: Boolean, code: Int, error: String, stackTrace: Array[StackTraceElement]): Unit = {
@@ -869,7 +979,9 @@ object DriverStation {
           haveLoc = true
         }
 
-        i += 1
+        {
+          i += 1; i - 1
+        }
       }
     }
     HAL.sendError(isError, code, false, error, locString, traceString, true)

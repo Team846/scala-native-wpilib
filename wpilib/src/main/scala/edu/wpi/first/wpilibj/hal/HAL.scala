@@ -53,7 +53,7 @@ object HAL extends JNIWrapper {
     */
   def report(resource: Int, instanceNumber: Int, context: Int, feature: String): Int = jni
 
-  private def nativeGetControlWord: Int = jni
+  def nativeGetControlWord: Int = jni
 
   @SuppressWarnings(Array("JavadocMethod"))
   def getControlWord(controlWord: ControlWord): Unit = {
