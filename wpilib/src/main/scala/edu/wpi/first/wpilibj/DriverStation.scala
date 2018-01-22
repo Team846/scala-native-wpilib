@@ -584,7 +584,13 @@ class DriverStation private() extends RobotState.Interface {
     * Wait for new data from the driver station.
     */
   def waitForData(): Unit = {
-    waitForData(0)
+//    waitForData(0)
+    // TODO FIX ME AYEEEE
+    try {
+      m_waitForDataCond.wait()
+    } catch {
+      case _ =>
+    }
   }
 
   /**
@@ -786,6 +792,7 @@ class DriverStation private() extends RobotState.Interface {
     m_waitForDataMutex.lock()
     m_waitForDataCount += 1
     m_waitForDataCond.signalAll()
+    m_waitForDataCond.notifyAll()
     m_waitForDataMutex.unlock()
     sendMatchData()
   }
