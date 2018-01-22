@@ -8,35 +8,53 @@ class jnilib(library: String) extends scala.annotation.StaticAnnotation {
 }
 
 object JNIMacrosImpl {
+  def sigStringForType(c: whitebox.Context)(cls: c.universe.Type): String = {
+    cls.typeSymbol.fullName match {
+      case "scala.Boolean" => "Z"
+      case "scala.Byte" => "B"
+      case "scala.Char" => "C"
+      case "scala.Short" => "S"
+      case "scala.Int" => "I"
+      case "scala.Long" => "J"
+      case "scala.Float" => "F"
+      case "scala.Double" => "D"
+      case "scala.Unit" => "V"
+      case "scala.Array" =>
+        s"[${sigStringForType(c)(cls.typeArgs.head)}"
+      case o =>
+        s"L${o.split('.').mkString("/")};"
+    }
+  }
+
+  def jniSigStringForType(c: whitebox.Context)(cls: c.universe.Type): String = {
+    cls.typeSymbol.fullName match {
+      case "scala.Boolean" => "Z"
+      case "scala.Byte" => "B"
+      case "scala.Char" => "C"
+      case "scala.Short" => "S"
+      case "scala.Int" => "I"
+      case "scala.Long" => "J"
+      case "scala.Float" => "F"
+      case "scala.Double" => "D"
+      case "scala.Unit" => "V"
+      case "scala.Array" =>
+        s"_3${sigStringForType(c)(cls.typeArgs.head)}"
+      case o =>
+        s"L${o.split('.').mkString("_")}_2"
+    }
+  }
+
   def autoClassImpl[T: c.WeakTypeTag](c: whitebox.Context): c.Tree = {
     import c.universe._
 
     val targetType = implicitly[c.WeakTypeTag[T]].tpe
-
-    def sigStringForType(cls: Type): String = {
-      cls.typeSymbol.fullName match {
-        case "scala.Boolean" => "Z"
-        case "scala.Byte" => "B"
-        case "scala.Char" => "C"
-        case "scala.Short" => "S"
-        case "scala.Int" => "I"
-        case "scala.Long" => "J"
-        case "scala.Float" => "F"
-        case "scala.Double" => "D"
-        case "scala.Unit" => "V"
-        case "scala.Array" =>
-          s"[${sigStringForType(cls.typeArgs.head)}"
-        case o =>
-          s"L${o.split('.').mkString("/")};"
-      }
-    }
 
     val methodIds = targetType.members.toList
       .filter(m => m.isMethod && m.isPublic && !m.isSynthetic
         && m.owner.fullName == targetType.typeSymbol.fullName
         && m.asMethod.paramLists.nonEmpty).map { member =>
       val paramsString = member.asMethod.paramLists.head
-        .map(_.typeSignature).map(sigStringForType).mkString
+        .map(_.typeSignature).map(sigStringForType(c)).mkString
 
       val callerParamsCode = member.asMethod.paramLists.head.map { param =>
         val isObjectArray =
@@ -74,7 +92,7 @@ object JNIMacrosImpl {
            |}""".stripMargin
       } else {
         val name = member.name.decodedName
-        val signatureString = s"($paramsString)${sigStringForType(member.typeSignature.resultType)}"
+        val signatureString = s"($paramsString)${sigStringForType(c)(member.typeSignature.resultType)}"
 
         s"""("$name", "$signatureString") -> new _root_.com.lynbrookrobotics.scalanativejni.JMethodID {
            |  override def run(a: _root_.scala.scalanative.native.Ptr[Byte]): Any = throw new Exception("Cannot call run with a instance method")
@@ -105,6 +123,11 @@ object JNIMacrosImpl {
     val inputs = annottees.map(_.tree).toList
     val outputs = inputs match {
       case (obj @ q"..$_ object $objname extends ..$parents { $self => ..$stats }") :: _ =>
+        val overloadedMethodNames = stats.collect {
+          case rawmethod@q"..$_ def $methodName(...$rawparamss): $tpt = jni" =>
+            methodName.toString()
+        }.groupBy(identity).filter(_._2.size > 1).keySet
+
         val newStats = stats.flatMap {
           case rawmethod@q"..$_ def $methodName(...$rawparamss): $tpt = jni" =>
             val method = c.typecheck(rawmethod.asInstanceOf[c.Tree])
@@ -116,19 +139,21 @@ object JNIMacrosImpl {
 
             val objectPath = method.symbol.owner.fullName
 
-            val jniName = s"Java_${objectPath.replace('.', '_')}_${objname}_$methodName"
+            val jniName = if (overloadedMethodNames.contains(methodName.toString())) {
+              s"Java_${objectPath.replace('.', '_')}_${objname}_${methodName}__${paramss.map(p => jniSigStringForType(c)(p.asTerm.typeSignature)).mkString}"
+            } else s"Java_${objectPath.replace('.', '_')}_${objname}_$methodName"
 
             val jniParams = paramss.map { param =>
               q"val ${param.name.asInstanceOf[TermName]}: ${param.typeSignature}"
             }
 
-            val paramExprs = rawparamss.flatMap { list =>
+            val paramExprs = rawparamss.asInstanceOf[Seq[Seq[Tree]]].flatMap { list =>
               list.map {
                 case q"$_ val $param: $_ = $_" => q"$param"
               }
             }
 
-            val linkerName = TermName(methodName.asInstanceOf[TermName].encoded + "_linker")
+            val linkerName = TermName(methodName.asInstanceOf[TermName].encoded + "_linker_" + paramss.map(p => jniSigStringForType(c)(p.asTerm.typeSignature)).mkString)
 
             val linkerObject =
               q"""
@@ -136,7 +161,7 @@ object JNIMacrosImpl {
                    @_root_.scala.scalanative.native.name(${Literal(Constant(jniName))})
                    def native(env: _root_.com.lynbrookrobotics.scalanativejni.Env,
                               cls: _root_.com.lynbrookrobotics.scalanativejni.Cls,
-                              ..$jniParams): ${method.symbol.asMethod.returnType.typeSymbol} =
+                              ..$jniParams): ${method.symbol.asMethod.returnType} =
                      _root_.scala.scalanative.native.extern
                  }
                """
