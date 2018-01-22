@@ -52,12 +52,9 @@ object SPIJNI extends JNIWrapper {
 
   def spiForceAutoRead(port: Int): Unit = jni
 
-  def spiReadAutoReceivedData__ILjava_nio_ByteBuffer_2ID(port: Int, buffer: ByteBuffer, numToRead: Int, timeout: Double): Int = jni
+  def spiReadAutoReceivedData(port: Int, buffer: ByteBuffer, numToRead: Int, timeout: Double): Int = jni
 
-  def spiReadAutoReceivedData__I_3BID(port: Int, buffer: Array[Byte], numToRead: Int, timeout: Double): Int = jni
-
-  def spiReadAutoReceivedData(port: Int, buffer: ByteBuffer, numToRead: Int, timeout: Double): Int = spiReadAutoReceivedData__ILjava_nio_ByteBuffer_2ID(port, buffer, numToRead, timeout)
-  def spiReadAutoReceivedData(port: Int, buffer: Array[Byte], numToRead: Int, timeout: Double): Int = spiReadAutoReceivedData__I_3BID(port, buffer, numToRead, timeout)
+  def spiReadAutoReceivedData(port: Int, buffer: Array[Byte], numToRead: Int, timeout: Double): Int = jni
 
   def spiGetAutoDroppedCount(port: Int): Int = jni
 }
