@@ -87,8 +87,11 @@ object LaunchRobot extends RobotBase {
 
     HAL.observeUserProgramStarting()
 
+    var prev = System.currentTimeMillis()
     while (true) {
       ds.waitForData()
+      println(System.currentTimeMillis() - prev)
+      prev = System.currentTimeMillis()
       eventPollingSource.fire()
       coreRobot.driverHardware.driverStationUpdate.apply()
     }

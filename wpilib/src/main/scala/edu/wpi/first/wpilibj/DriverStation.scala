@@ -584,13 +584,7 @@ class DriverStation private() extends RobotState.Interface {
     * Wait for new data from the driver station.
     */
   def waitForData(): Unit = {
-//    waitForData(0)
-    // TODO FIX ME AYEEEE
-    try {
-      m_waitForDataCond.wait()
-    } catch {
-      case _ =>
-    }
+    waitForData(0)
   }
 
   /**
@@ -601,7 +595,12 @@ class DriverStation private() extends RobotState.Interface {
     * @return true if there is new data, otherwise false
     */
   def waitForData(timeout: Double): Boolean = {
-    HAL.waitForDSDataTimeout(timeout)
+    if (timeout > 0) {
+      m_waitForDataCond.wait((timeout * 1000).toLong)
+    } else {
+      m_waitForDataCond.wait()
+    }
+    true
     // TODO FIX ME AYEEEE
 //    val startTime = RobotController.getFPGATime
 //    val timeoutMicros = (timeout * 1000000).toLong
