@@ -201,16 +201,16 @@ object NetworkTablesJNI {
 
   def isConnected(inst: Int): Boolean = jni
 
-//  @throws[PersistentException]
+  @throws[PersistentException]
   def savePersistent(inst: Int, filename: String): Unit = jni
 
-//  @throws[PersistentException]
+  @throws[PersistentException]
   def loadPersistent(inst: Int, filename: String): Array[String] = jni // returns warnings
 
-//  @throws[PersistentException]
+  @throws[PersistentException]
   def saveEntries(inst: Int, filename: String, prefix: String): Unit = jni
 
-//  @throws[PersistentException]
+  @throws[PersistentException]
   def loadEntries(inst: Int, filename: String, prefix: String): Array[String] = jni
 
   def now: Long = jni
