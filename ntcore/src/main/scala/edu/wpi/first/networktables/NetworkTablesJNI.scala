@@ -234,8 +234,7 @@ object NetworkTablesJNI {
   def waitForLoggerQueue(inst: Int, timeout: Double): Boolean = jni
 
   if (!libraryLoaded) {
-    DL.dlopen(c"libntcore.so", 0x002 /* RTLD_NOW */)
-    JNILoad.JNI_OnLoad(vm, null)
+    loadJNILibrary(c"libntcore.so")
     libraryLoaded = true
   }
 }

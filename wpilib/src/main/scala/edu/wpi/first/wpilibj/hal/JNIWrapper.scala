@@ -9,8 +9,7 @@ import scala.scalanative.native._
 
 class JNIWrapper {
   if (!JNIWrapper.hasLoaded) {
-    DL.dlopen(c"libwpilibJNI.so", 0x002 /* RTLD_NOW */)
-    JNILoad.JNI_OnLoad(vm, null)
+    loadJNILibrary(c"libwpilibJNI.so")
     JNIWrapper.hasLoaded = true
   }
 

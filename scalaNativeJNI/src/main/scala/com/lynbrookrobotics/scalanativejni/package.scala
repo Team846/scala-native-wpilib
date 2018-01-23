@@ -179,6 +179,11 @@ package object scalanativejni {
 
   def jni[T]: T = throw new IllegalStateException("bad")
 
+  def loadJNILibrary(libFile: CString): Unit = {
+    DL.dlopen(libFile, 0x002 /* RTLD_NOW */)
+    JNILoad.JNI_OnLoad(vm, null)
+  }
+
   @extern
   object MockJNI {
     def createEnv(findClass: CFunctionPtr2[Env, CString, JClass],

@@ -9,8 +9,7 @@ import edu.wpi.first.wpilibj.util.{AllocationException, BoundaryException, HalHa
 
 class CTREJNIWrapper {
   if (!CTREJNIWrapper.libraryLoaded) {
-    DL.dlopen(c"libCTRE_PhoenixCCI.so", 0x002 /* RTLD_NOW */)
-    JNILoad.JNI_OnLoad(vm, null)
+    loadJNILibrary(c"libCTRE_PhoenixCCI.so")
     CTREJNIWrapper.libraryLoaded = true
   }
 
