@@ -12,6 +12,7 @@ lazy val scalaNativeWpilib = project.in(file("."))
     scalaNativeJNINativeLib,
     scalaNativeJNI,
     wpilib,
+    ntcore,
     phoenix
   ).settings(
   publish := {},
