@@ -8,8 +8,8 @@
 package edu.wpi.first.networktables
 
 import java.util
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
+//import java.util.concurrent.ConcurrentHashMap
+//import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.ReentrantLock
@@ -55,7 +55,7 @@ object NetworkTableInstance {
     *
     * @return Global default instance
     */
-  def getDefault: NetworkTableInstance = {
+  def getDefault(): NetworkTableInstance = {
     if (s_defaultInstance == null) s_defaultInstance = new NetworkTableInstance(NetworkTablesJNI.getDefaultInstance)
     s_defaultInstance
   }
@@ -67,7 +67,7 @@ object NetworkTableInstance {
     *
     * @return Newly created instance
     */
-  def create: NetworkTableInstance = {
+  def create(): NetworkTableInstance = {
     val inst = new NetworkTableInstance(NetworkTablesJNI.createInstance)
     inst.m_owned = true
     inst
@@ -152,7 +152,7 @@ final class NetworkTableInstance private(var m_handle: Int) { self =>
     */
   def getEntryInfo(prefix: String, types: Int): Array[EntryInfo] = NetworkTablesJNI.getEntryInfo(this, m_handle, prefix, types)
 
-  /* Cache of created tables. */ final private val m_tables = new ConcurrentHashMap[String, NetworkTable]
+  /* Cache of created tables. */ final private val m_tables = new util.HashMap[String, NetworkTable]
 
   /**
     * Gets the table with the specified key.
@@ -169,7 +169,10 @@ final class NetworkTableInstance private(var m_handle: Int) { self =>
     var table = m_tables.get(theKey)
     if (table == null) {
       table = new NetworkTable(this, theKey)
-      val oldTable = m_tables.putIfAbsent(theKey, table)
+      val oldTable = if (!m_tables.containsKey(theKey)) {
+        m_tables.put(theKey, table)
+        table
+      } else m_tables.get(theKey)
       if (oldTable != null) table = oldTable
     }
     table

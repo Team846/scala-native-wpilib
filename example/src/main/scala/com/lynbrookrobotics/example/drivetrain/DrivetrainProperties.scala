@@ -18,4 +18,5 @@ case class DrivetrainProperties(maxLeftVelocity: Velocity, maxRightVelocity: Vel
                                 currentLimit: Dimensionless,
                                 defaultLookAheadDistance: Length) extends TwoSidedDriveProperties {
   override val maxTurnVelocity = RadiansPerSecond((((maxLeftVelocity + maxRightVelocity) * Seconds(1)) / Inches(21.75)) / 2)
+  override val blendExponent = 0D
 }

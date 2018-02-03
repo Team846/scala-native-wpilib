@@ -7,13 +7,14 @@
 
 package edu.wpi.first.networktables
 
+import java.util
 import java.util.ArrayList
 import java.util.HashSet
 import java.util.List
 import java.util.Objects
 import java.util.Set
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
+//import java.util.concurrent.ConcurrentHashMap
+//import java.util.concurrent.ConcurrentMap
 import java.util.function.Consumer
 
 import NetworkTable._
@@ -35,8 +36,8 @@ class NetworkTable(private val inst: NetworkTableInstance, val path: String) { s
 
   override def toString(): String = "NetworkTable: " + path
 
-  private val entries: ConcurrentMap[String, NetworkTableEntry] =
-    new ConcurrentHashMap[String, NetworkTableEntry]()
+  private val entries: util.Map[String, NetworkTableEntry] =
+    new util.HashMap[String, NetworkTableEntry]()
 
   /**
     * Gets the entry for a subkey.
@@ -47,7 +48,9 @@ class NetworkTable(private val inst: NetworkTableInstance, val path: String) { s
     var entry: NetworkTableEntry = entries.get(key)
     if (entry == null) {
       entry = inst.getEntry(pathWithSep + key)
-      entries.putIfAbsent(key, entry)
+      if (!entries.containsKey(key)) {
+        entries.put(key, entry)
+      }
     }
     entry
   }
@@ -196,7 +199,7 @@ class NetworkTable(private val inst: NetworkTableInstance, val path: String) { s
         keys.add(relativeKey)
       // populate entries as we go
       if (entries.get(relativeKey) == null) {
-        entries.putIfAbsent(relativeKey,
+        entries.put(relativeKey,
           new NetworkTableEntry(inst, info.entry))
       }
     }

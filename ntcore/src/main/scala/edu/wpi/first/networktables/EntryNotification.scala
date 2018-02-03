@@ -40,7 +40,7 @@ final class EntryNotification(/* Network table instance. */ val inst: NetworkTab
                               /**
                                 * The new value.
                                 */
-                              val value: Nothing,
+                              val value: NetworkTableValue,
 
                               /**
                                 * Update flags.  For example, {@link EntryListenerFlags#kNew} if the key did

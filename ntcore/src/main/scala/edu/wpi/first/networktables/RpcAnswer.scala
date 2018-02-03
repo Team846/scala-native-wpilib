@@ -45,7 +45,7 @@ final class RpcAnswer(/* Network table instance. */ val inst: NetworkTableInstan
     * Posts an empty response if one was not previously sent.
     */
   def free(): Unit = {
-    if (call != 0) postResponse(RpcAnswer.emptyResponse)
+    if (call != 0) _postResponse(RpcAnswer.emptyResponse)
   }
 
   /**
@@ -60,7 +60,7 @@ final class RpcAnswer(/* Network table instance. */ val inst: NetworkTableInstan
     *
     * @param result result raw data that will be provided to remote caller
     */
-  def postResponse(result: Array[Byte]): Unit = {
+  private def _postResponse(result: Array[Byte]): Unit = {
     NetworkTablesJNI.postRpcResponse(entry, call, result)
     call = 0
   }

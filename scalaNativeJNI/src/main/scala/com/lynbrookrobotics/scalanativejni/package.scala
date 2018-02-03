@@ -30,7 +30,7 @@ package object scalanativejni {
 
   def autoClass[T]: JClass = macro JNIMacrosImpl.autoClassImpl[T]
 
-  val utf16Charset = Charset.forName("UTF-16")
+  val utf16Charset = Charset.forName("UTF-16LE")
 
   def newString(env: Env, cstr: CString, len: Int): String = {
     val bytesCount = len * 2
@@ -38,9 +38,8 @@ package object scalanativejni {
 
     var c = 0
     while (c < bytesCount) {
-      bytes(c) = !(cstr + c + 1) // reversed because little endian vs big endian
-      bytes(c + 1) = !(cstr + c)
-      c += 2
+      bytes(c) = !(cstr + c)
+      c += 1
     }
 
     new String(bytes, utf16Charset)
@@ -52,9 +51,8 @@ package object scalanativejni {
 
     var c = 0
     while (c < bytes.length) {
-      !(cstr + c + 1) = bytes(c) // reversed because little endian vs big endian
-      !(cstr + c) = bytes(c + 1)
-      c += 2
+      !(cstr + c) = bytes(c)
+      c += 1
     }
 
     !(cstr + bytes.length) = 0.toByte // NUL
@@ -171,6 +169,12 @@ package object scalanativejni {
     },
     (env: Env, buffer: ByteBuffer) => {
       buffer.capacity().toLong
+    },
+    (env: Env, size: Int, cls: JClass, obj: Object) => {
+      new Array[Object](size)
+    },
+    (env: Env, arr: Array[Object], idx: Int, obj: Object) => {
+      arr(idx) = obj
     }
   )
 
@@ -180,8 +184,8 @@ package object scalanativejni {
   def jni[T]: T = throw new IllegalStateException("bad")
 
   def loadJNILibrary(libFile: CString): Unit = {
-    DL.dlopen(libFile, 0x002 /* RTLD_NOW */)
-    JNILoad.JNI_OnLoad(vm, null)
+    val fp = DL.dlsym(DL.dlopen(libFile, 0x002 /* RTLD_NOW */), c"JNI_OnLoad").cast[CFunctionPtr2[VM, Ptr[Unit], Unit]]
+    fp(vm, null)
   }
 
   @extern
@@ -208,7 +212,9 @@ package object scalanativejni {
 
                   newDirectByteBuffer: CFunctionPtr3[Env, Ptr[Byte], Long, ByteBuffer],
                   getDirectBufferAddress: CFunctionPtr2[Env, ByteBuffer, Ptr[Byte]],
-                  getDirectBufferCapacity: CFunctionPtr2[Env, ByteBuffer, Long]): Env = extern
+                  getDirectBufferCapacity: CFunctionPtr2[Env, ByteBuffer, Long],
+                  newObjectArray: CFunctionPtr4[Env, Int, JClass, Object, Array[Object]],
+                  setObjectArrayElement: CFunctionPtr4[Env, Array[Object], Int, Object, Unit]): Env = extern
     def createVM(env: Env): VM = extern
     def testVM(vm: VM, env: Env): Unit = extern
   }

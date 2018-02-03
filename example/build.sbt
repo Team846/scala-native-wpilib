@@ -4,8 +4,8 @@ nativeMode := "debug"
 
 nativeGC := "boehm"
 
-libraryDependencies += "com.lynbrookrobotics" %%% "potassium-commons" % "0.1.0-fb92ab65"
-libraryDependencies += "com.lynbrookrobotics" %%% "potassium-frc" % "0.1.0-fb92ab65"
+libraryDependencies += "com.lynbrookrobotics" %%% "potassium-commons" % "0.1.0-c691d7ba"
+libraryDependencies += "com.lynbrookrobotics" %%% "potassium-frc" % "0.1.0-c691d7ba"
 
 val boehmFolder = file("/Users/shadaj/cross-compile/bdwgc")
 val libunwindFolder = file("/Users/shadaj/cross-compile/libunwind-1.2.1")
@@ -76,7 +76,7 @@ val crossCompileSettings = if (true) {
     nativeLinkingOptions ++= Seq(
       "-lm", "-lc", "-lstdc++", "-lpthread", "-ldl", // system stuff,
       // transitive dependencies
-      "-lwpilibJNI", "-lCTRE_PhoenixCCI", "-lwpiHal", "-lwpiutil", "-l:libniriosession.so.17.0.0", "-l:libniriodevenum.so.17.0.0",
+      "-lwpilibJNI", "-lntcore", "-lCTRE_PhoenixCCI", "-lwpiHal", "-lwpiutil", "-l:libniriosession.so.17.0.0", "-l:libniriodevenum.so.17.0.0",
       "-l:libRoboRIO_FRC_ChipObject.so.18.0.0", "-l:libvisa.so", "-l:libFRC_NetworkCommunication.so.18.0.0",
       "-l:libNiFpga.so.17.0.0", "-l:libNiFpgaLv.so.17.0.0", "-l:libNiRioSrv.so.17.0.0",
 

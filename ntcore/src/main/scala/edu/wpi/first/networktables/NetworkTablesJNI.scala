@@ -20,6 +20,19 @@ import scala.scalanative.native._
 
 @jnilib("ntcore")
 object NetworkTablesJNI {
+  registerClass(autoClass[java.lang.Boolean])
+  registerClass(autoClass[ConnectionInfo])
+  registerClass(autoClass[ConnectionNotification])
+  registerClass(autoClass[java.lang.Double])
+  registerClass(autoClass[EntryInfo])
+  registerClass(autoClass[EntryNotification])
+  registerClass(autoClass[LogMessage])
+  registerClass(autoClass[RpcAnswer])
+  registerClass(autoClass[NetworkTableValue])
+  registerClass(autoClass[InterruptedException])
+  registerClass(autoClass[NullPointerException])
+  registerClass(autoClass[PersistentException])
+
   private[networktables] var libraryLoaded = false
   private[networktables] var jniLibrary = null
 

@@ -13,9 +13,9 @@ import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 
-//import edu.wpi.first.networktables.NetworkTable
-//import edu.wpi.first.networktables.NetworkTableEntry
-//import edu.wpi.first.networktables.NetworkTableInstance
+import edu.wpi.first.networktables.NetworkTable
+import edu.wpi.first.networktables.NetworkTableEntry
+import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.hal.AllianceStationID
 import edu.wpi.first.wpilibj.hal.ControlWord
 import edu.wpi.first.wpilibj.hal.HAL
@@ -729,14 +729,14 @@ class DriverStation private() extends RobotState.Interface {
       matchType = m_matchInfo.matchType
     }
 
-//    m_matchDataSender.alliance.setBoolean(isRedAlliance)
-//    m_matchDataSender.station.setDouble(stationNumber)
-//    m_matchDataSender.eventName.setString(eventName)
-//    m_matchDataSender.gameSpecificMessage.setString(gameSpecificMessage)
-//    m_matchDataSender.matchNumber.setDouble(matchNumber)
-//    m_matchDataSender.replayNumber.setDouble(replayNumber)
-//    m_matchDataSender.matchType.setDouble(matchType)
-//    m_matchDataSender.controlWord.setDouble(HAL.nativeGetControlWord)
+    m_matchDataSender.alliance.setBoolean(isRedAlliance)
+    m_matchDataSender.station.setDouble(stationNumber)
+    m_matchDataSender.eventName.setString(eventName)
+    m_matchDataSender.gameSpecificMessage.setString(gameSpecificMessage)
+    m_matchDataSender.matchNumber.setDouble(matchNumber)
+    m_matchDataSender.replayNumber.setDouble(replayNumber)
+    m_matchDataSender.matchType.setDouble(matchType)
+    m_matchDataSender.controlWord.setDouble(HAL.nativeGetControlWord)
   }
 
   /**
@@ -890,25 +890,25 @@ object DriverStation {
   }
 
   private class MatchDataSender private[wpilibj]() {
-//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var table = NetworkTableInstance.getDefault.getTable("FMSInfo")
-//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var typeMetadata = table.getEntry(".type")
-//    typeMetadata.forceSetString("FMSInfo")
-//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var gameSpecificMessage = table.getEntry("GameSpecificMessage")
-//    gameSpecificMessage.forceSetString("")
-//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var eventName = table.getEntry("EventName")
-//    eventName.forceSetString("")
-//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var matchNumber = table.getEntry("MatchNumber")
-//    matchNumber.forceSetDouble(0)
-//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var replayNumber = table.getEntry("ReplayNumber")
-//    replayNumber.forceSetDouble(0)
-//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var matchType = table.getEntry("MatchType")
-//    matchType.forceSetDouble(0)
-//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var alliance = table.getEntry("IsRedAlliance")
-//    alliance.forceSetBoolean(true)
-//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var station = table.getEntry("StationNumber")
-//    station.forceSetDouble(1)
-//    @SuppressWarnings(Array("MemberName")) private[wpilibj] var controlWord = table.getEntry("FMSControlData")
-//    controlWord.forceSetDouble(0)
+    @SuppressWarnings(Array("MemberName")) private[wpilibj] var table = NetworkTableInstance.getDefault.getTable("FMSInfo")
+    @SuppressWarnings(Array("MemberName")) private[wpilibj] var typeMetadata = table.getEntry(".type")
+    typeMetadata.forceSetString("FMSInfo")
+    @SuppressWarnings(Array("MemberName")) private[wpilibj] var gameSpecificMessage = table.getEntry("GameSpecificMessage")
+    gameSpecificMessage.forceSetString("")
+    @SuppressWarnings(Array("MemberName")) private[wpilibj] var eventName = table.getEntry("EventName")
+    eventName.forceSetString("")
+    @SuppressWarnings(Array("MemberName")) private[wpilibj] var matchNumber = table.getEntry("MatchNumber")
+    matchNumber.forceSetDouble(0)
+    @SuppressWarnings(Array("MemberName")) private[wpilibj] var replayNumber = table.getEntry("ReplayNumber")
+    replayNumber.forceSetDouble(0)
+    @SuppressWarnings(Array("MemberName")) private[wpilibj] var matchType = table.getEntry("MatchType")
+    matchType.forceSetDouble(0)
+    @SuppressWarnings(Array("MemberName")) private[wpilibj] var alliance = table.getEntry("IsRedAlliance")
+    alliance.forceSetBoolean(true)
+    @SuppressWarnings(Array("MemberName")) private[wpilibj] var station = table.getEntry("StationNumber")
+    station.forceSetDouble(1)
+    @SuppressWarnings(Array("MemberName")) private[wpilibj] var controlWord = table.getEntry("FMSControlData")
+    controlWord.forceSetDouble(0)
   }
 
   private val instance = new DriverStation

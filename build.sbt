@@ -36,6 +36,6 @@ lazy val phoenix = project.dependsOn(scalaNativeJNI, wpilib).settings(
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 )
 
-lazy val example = project.dependsOn(wpilib, phoenix).settings(
+lazy val example = project.dependsOn(wpilib, ntcore, phoenix).settings(
   unmanagedJars in Compile += (Keys.`package` in Compile in scalaNativeJNINativeLib).value
 )

@@ -67,6 +67,12 @@ object JNIMacrosImpl {
              |  position += _root_.scala.scalanative.native.sizeof[Object]
              |  r.asInstanceOf[${param.typeSignature}]
              |}""".stripMargin
+        } else if (param.typeSignature.typeSymbol.fullName == "scala.Any") {
+          s"""{
+             |  val r = !(a + position).cast[_root_.scala.scalanative.native.Ptr[Object]]
+             |  position += _root_.scala.scalanative.native.sizeof[Object]
+             |  r.asInstanceOf[Object]
+             |}""".stripMargin
         } else {
           s"""{
              |  val r = !(a + position).cast[_root_.scala.scalanative.native.Ptr[${param.typeSignature}]]

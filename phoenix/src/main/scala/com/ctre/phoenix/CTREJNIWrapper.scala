@@ -37,6 +37,8 @@ object CTREJNIWrapper {
   registerClass(autoClass[PWMConfigDataResult]) // PWM
   registerClass(autoClass[AccumulatorResult]) // Analog
 
+  registerClass(autoClass[StackTraceElement])
+
   var libraryLoaded = false
 
   def getPortWithModule(module: Byte, channel: Byte): Int = jni

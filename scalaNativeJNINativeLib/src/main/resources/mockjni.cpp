@@ -24,7 +24,10 @@ extern "C" {
 
                       jobject (JNICALL *JNIEnv_NewDirectByteBuffer) (JNIEnv* env, void* address, jlong capacity),
                       void* (JNICALL *JNIEnv_GetDirectBufferAddress) (JNIEnv* env, jobject buf),
-                      jlong (JNICALL *JNIEnv_GetDirectBufferCapacity) (JNIEnv* env, jobject buf)) {
+                      jlong (JNICALL *JNIEnv_GetDirectBufferCapacity) (JNIEnv* env, jobject buf),
+
+                      jobjectArray (JNICALL *JNIEnv_NewObjectArray) (JNIEnv *env, jsize len, jclass clazz, jobject init),
+                      void (JNICALL *JNIEnv_SetObjectArrayElement) (JNIEnv *env, jobjectArray array, jsize index, jobject val)) {
         struct JNINativeInterface_ * env = (struct JNINativeInterface_ *) malloc(sizeof(struct JNINativeInterface_));
         env->FindClass = JNIEnv_FindClass;
         env->NewGlobalRef = JNIEnv_NewGlobalRef;
@@ -49,6 +52,9 @@ extern "C" {
         env->NewDirectByteBuffer = JNIEnv_NewDirectByteBuffer;
         env->GetDirectBufferAddress = JNIEnv_GetDirectBufferAddress;
         env->GetDirectBufferCapacity = JNIEnv_GetDirectBufferCapacity;
+
+        env->NewObjectArray = JNIEnv_NewObjectArray;
+        env->SetObjectArrayElement = JNIEnv_SetObjectArrayElement;
 
         void** ptr = (void**) malloc(sizeof(void*));
         *ptr = env;

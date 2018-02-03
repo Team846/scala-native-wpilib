@@ -19,8 +19,8 @@ package object drivetrain extends TwoSidedDrive { self =>
                                 signal: TwoSidedSignal): Unit = {
     hardware.leftBack.talon.set(ControlMode.PercentOutput, signal.left.toEach)
     hardware.leftFront.talon.set(ControlMode.PercentOutput, signal.left.toEach)
-    hardware.rightBack.talon.set(ControlMode.PercentOutput, -signal.right.toEach)
-    hardware.rightFront.talon.set(ControlMode.PercentOutput, -signal.right.toEach)
+    hardware.rightBack.talon.set(ControlMode.PercentOutput, signal.right.toEach)
+    hardware.rightFront.talon.set(ControlMode.PercentOutput, signal.right.toEach)
   }
 
   override protected def controlMode(implicit hardware: DrivetrainHardware,
@@ -57,7 +57,7 @@ package object drivetrain extends TwoSidedDrive { self =>
     val normalDrivetrainVoltage = Volts(12)
 
     override def applySignal(signal: TwoSidedSignal): Unit = {
-      val compFactor = normalDrivetrainVoltage / Volts(hardware.driverHardware.station.getBatteryVoltage)
+      val compFactor = 1//normalDrivetrainVoltage / Volts(hardware.driverHardware.station.getBatteryVoltage)
       output(hardware, TwoSidedSignal(signal.left * compFactor, signal.right * compFactor))
     }
   }

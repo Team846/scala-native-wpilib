@@ -15,7 +15,7 @@ import java.util
 import java.util.jar.Manifest
 
 //import edu.wpi.cscore.CameraServerJNI
-//import edu.wpi.first.networktables.NetworkTableInstance
+import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tInstances
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tResourceType
 import edu.wpi.first.wpilibj.hal.HAL
@@ -40,12 +40,12 @@ abstract class RobotBase protected() {
   RobotBase.initializeHardwareConfiguration()
   HAL.report(tResourceType.kResourceType_Language, tInstances.kLanguage_Java)
 
-//  val inst: NetworkTableInstance = NetworkTableInstance.getDefault
-//  inst.setNetworkIdentity("Robot")
-//  inst.startServer("/home/lvuser/networktables.ini")
+  val inst: NetworkTableInstance = NetworkTableInstance.getDefault
+  inst.setNetworkIdentity("Robot")
+  inst.startServer("/home/lvuser/networktables.ini")
   final protected var m_ds: DriverStation = DriverStation.getInstance
-//  inst.getTable("LiveWindow").getSubTable(".status").getEntry("LW Enabled").setBoolean(false)
-//
+  inst.getTable("LiveWindow").getSubTable(".status").getEntry("LW Enabled").setBoolean(false)
+
 //  LiveWindow.setEnabled(false)
 
   /**

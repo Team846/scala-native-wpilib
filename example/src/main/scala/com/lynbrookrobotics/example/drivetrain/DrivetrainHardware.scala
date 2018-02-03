@@ -27,8 +27,10 @@ case class DrivetrainHardware(leftBack: TalonController, leftFront: TalonControl
                               driverHardware: DriverHardware,
                               period: Time)(implicit clock: Clock)
   extends TwoSidedDriveHardware {
-  val leftEncoder = new TalonEncoder(leftBack, Degrees(360) / Each(8192))
-  val rightEncoder = new TalonEncoder(rightBack, -Degrees(360) / Each(8192))
+  rightBack.talon.setInverted(true)
+  rightFront.talon.setInverted(true)
+  val leftEncoder = new TalonEncoder(leftBack, Degrees(360) / Each(4096))
+  val rightEncoder = new TalonEncoder(rightBack, -Degrees(360) / Each(4096))
 
   val wheelRadius = props.wheelDiameter / 2
   val track = props.track

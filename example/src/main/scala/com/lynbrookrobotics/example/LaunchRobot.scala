@@ -33,49 +33,50 @@ object LaunchRobot extends RobotBase {
       driverWheelPort = 2,
       launchpadPort = 3
     ),
-    drivetrain = DrivetrainConfig(
-      ports = DrivetrainPorts(
-        leftBack = 50,
-        leftFront = 51,
-        rightBack = 41,
-        rightFront = 40
-      ),
-      properties = DrivetrainProperties(
-        maxLeftVelocity = FeetPerSecond(21.9),
-        maxRightVelocity = FeetPerSecond(23.1),
-        maxAcceleration = MetersPerSecondSquared(0),
-        wheelDiameter = Inches(4),
-        track = Inches(21.75),
-        gearRatio = 28.0 / 56,
-        turnControlGains = PIDConfig(
-          Percent(50) / DegreesPerSecond(360),
-          Percent(0) / Degrees(1),
-          Percent(0) / (DegreesPerSecond(1).toGeneric / Seconds(1))
-        ),
-        forwardPositionControlGains = PIDConfig(
-          Percent(100) / Feet(2),
-          Percent(0) / (Feet(1).toGeneric * Seconds(1)),
-          Percent(0) / FeetPerSecond(1)
-        ),
-        turnPositionControlGains = PIDConfig(
-          Percent(100) / Degrees(90),
-          Percent(0) / (Degrees(1).toGeneric * Seconds(1)),
-          Percent(0) / DegreesPerSecond(1)
-        ),
-        leftControlGains = PIDConfig(
-          Percent(30) / FeetPerSecond(5),
-          Percent(0) / Meters(1),
-          Percent(0) / MetersPerSecondSquared(1)
-        ),
-        rightControlGains = PIDConfig(
-          Percent(30) / FeetPerSecond(5),
-          Percent(0) / Meters(1),
-          Percent(0) / MetersPerSecondSquared(1)
-        ),
-        currentLimit = Percent(50),
-        defaultLookAheadDistance = Feet(1)
-      )
-    )
+    drivetrain = null
+//    drivetrain = DrivetrainConfig(
+//      ports = DrivetrainPorts(
+//        leftBack = 50,
+//        leftFront = 51,
+//        rightBack = 41,
+//        rightFront = 40
+//      ),
+//      properties = DrivetrainProperties(
+//        maxLeftVelocity = FeetPerSecond(21.9),
+//        maxRightVelocity = FeetPerSecond(23.1),
+//        maxAcceleration = MetersPerSecondSquared(0),
+//        wheelDiameter = Inches(4),
+//        track = Inches(21.75),
+//        gearRatio = 28.0 / 56,
+//        turnControlGains = PIDConfig(
+//          Percent(50) / DegreesPerSecond(360),
+//          Percent(0) / Degrees(1),
+//          Percent(0) / (DegreesPerSecond(1).toGeneric / Seconds(1))
+//        ),
+//        forwardPositionControlGains = PIDConfig(
+//          Percent(100) / Feet(2),
+//          Percent(0) / (Feet(1).toGeneric * Seconds(1)),
+//          Percent(0) / FeetPerSecond(1)
+//        ),
+//        turnPositionControlGains = PIDConfig(
+//          Percent(100) / Degrees(90),
+//          Percent(0) / (Degrees(1).toGeneric * Seconds(1)),
+//          Percent(0) / DegreesPerSecond(1)
+//        ),
+//        leftControlGains = PIDConfig(
+//          Percent(30) / FeetPerSecond(5),
+//          Percent(0) / Meters(1),
+//          Percent(0) / MetersPerSecondSquared(1)
+//        ),
+//        rightControlGains = PIDConfig(
+//          Percent(30) / FeetPerSecond(5),
+//          Percent(0) / Meters(1),
+//          Percent(0) / MetersPerSecondSquared(1)
+//        ),
+//        currentLimit = Percent(50),
+//        defaultLookAheadDistance = Feet(1)
+//      )
+//    )
   ))
 
   implicit val hardware = RobotHardware(config.get)
@@ -90,7 +91,6 @@ object LaunchRobot extends RobotBase {
     var prev = System.currentTimeMillis()
     while (true) {
       ds.waitForData()
-      println(System.currentTimeMillis() - prev)
       prev = System.currentTimeMillis()
       eventPollingSource.fire()
       coreRobot.driverHardware.driverStationUpdate.apply()
