@@ -146,8 +146,8 @@ object JNIMacrosImpl {
             val objectPath = method.symbol.owner.fullName
 
             val jniName = if (overloadedMethodNames.contains(methodName.toString())) {
-              s"Java_${objectPath.replace('.', '_')}_${objname}_${methodName}__${paramss.map(p => jniSigStringForType(c)(p.asTerm.typeSignature)).mkString}"
-            } else s"Java_${objectPath.replace('.', '_')}_${objname}_$methodName"
+              s"Java_${objectPath.replace('.', '_')}_${objname}_${methodName.toString.replace("_", "_1")}__${paramss.map(p => jniSigStringForType(c)(p.asTerm.typeSignature)).mkString}"
+            } else s"Java_${objectPath.replace('.', '_')}_${objname}_${methodName.toString.replace("_", "_1")}"
 
             val jniParams = paramss.map { param =>
               q"val ${param.name.asInstanceOf[TermName]}: ${param.typeSignature}"
