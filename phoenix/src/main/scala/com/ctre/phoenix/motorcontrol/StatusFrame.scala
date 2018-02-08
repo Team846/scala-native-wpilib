@@ -13,4 +13,18 @@ object StatusFrame {
   val Status_13_Base_PIDF0 = new StatusFrame(0x1700)
   val Status_14_Turn_PIDF1 = new StatusFrame(0x1740)
   val Status_15_FirmwareApiStatus = new StatusFrame(0x1780)
+
+  def values(): Seq[StatusFrame] = Seq(
+    Status_1_General,
+    Status_2_Feedback0,
+    Status_4_AinTempVbat,
+    Status_6_Misc,
+    Status_7_CommStatus,
+    Status_9_MotProfBuffer,
+    Status_10_MotionMagic,
+    Status_12_Feedback1,
+    Status_13_Base_PIDF0,
+    Status_14_Turn_PIDF1,
+    Status_15_FirmwareApiStatus
+  )
 }
