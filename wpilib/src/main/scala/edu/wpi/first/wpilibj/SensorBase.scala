@@ -10,7 +10,7 @@ package edu.wpi.first.wpilibj
 import edu.wpi.first.wpilibj.hal.AnalogJNI
 import edu.wpi.first.wpilibj.hal.ConstantsJNI
 import edu.wpi.first.wpilibj.hal.DIOJNI
-//import edu.wpi.first.wpilibj.hal.PDPJNI
+import edu.wpi.first.wpilibj.hal.PDPJNI
 import edu.wpi.first.wpilibj.hal.PWMJNI
 import edu.wpi.first.wpilibj.hal.PortsJNI
 //import edu.wpi.first.wpilibj.hal.RelayJNI
@@ -151,32 +151,32 @@ object SensorBase {
     }
   }
 
-//  /**
-//    * Verify that the power distribution channel number is within limits. Channel numbers are
-//    * 0-based.
-//    *
-//    * @param channel The channel number to check.
-//    */
-//  def checkPDPChannel(channel: Int): Unit = {
-//    if (!PDPJNI.checkPDPChannel(channel)) {
-//      val buf = new StringBuilder
-//      buf.append("Requested PDP channel is out of range. Minimum: 0, Maximum: ").append(kPDPChannels).append(", Requested: ").append(channel)
-//      throw new IndexOutOfBoundsException(buf.toString)
-//    }
-//  }
+  /**
+    * Verify that the power distribution channel number is within limits. Channel numbers are
+    * 0-based.
+    *
+    * @param channel The channel number to check.
+    */
+  def checkPDPChannel(channel: Int): Unit = {
+    if (!PDPJNI.checkPDPChannel(channel)) {
+      val buf = new StringBuilder
+      buf.append("Requested PDP channel is out of range. Minimum: 0, Maximum: ").append(kPDPChannels).append(", Requested: ").append(channel)
+      throw new IndexOutOfBoundsException(buf.toString)
+    }
+  }
 
-//  /**
-//    * Verify that the PDP module number is within limits. module numbers are 0-based.
-//    *
-//    * @param module The module number to check.
-//    */
-//  def checkPDPModule(module: Int): Unit = {
-//    if (!PDPJNI.checkPDPModule(module)) {
-//      val buf = new StringBuilder
-//      buf.append("Requested PDP module is out of range. Minimum: 0, Maximum: ").append(kPDPModules).append(", Requested: ").append(module)
-//      throw new IndexOutOfBoundsException(buf.toString)
-//    }
-//  }
+  /**
+    * Verify that the PDP module number is within limits. module numbers are 0-based.
+    *
+    * @param module The module number to check.
+    */
+  def checkPDPModule(module: Int): Unit = {
+    if (!PDPJNI.checkPDPModule(module)) {
+      val buf = new StringBuilder
+      buf.append("Requested PDP module is out of range. Minimum: 0, Maximum: ").append(kPDPModules).append(", Requested: ").append(module)
+      throw new IndexOutOfBoundsException(buf.toString)
+    }
+  }
 
   /**
     * Get the number of the default solenoid module.
