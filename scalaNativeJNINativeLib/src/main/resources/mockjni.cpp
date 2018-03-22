@@ -18,6 +18,7 @@ extern "C" {
                       const jchar * (JNICALL *JNIEnv_GetStringCritical) (JNIEnv *env, jstring string, jboolean *isCopy),
                       void (JNICALL *JNIEnv_ReleaseStringCritical) (JNIEnv *env, jstring string, const jchar *cstring),
 
+                      void (JNICALL *JNIEnv_SetByteArrayRegion) (JNIEnv *env, jbyteArray array, jsize start, jsize len, const jbyte *buf),
                       void (JNICALL *JNIEnv_SetShortArrayRegion) (JNIEnv *env, jshortArray array, jsize start, jsize len, const jshort *buf),
                       void (JNICALL *JNIEnv_SetFloatArrayRegion) (JNIEnv *env, jfloatArray array, jsize start, jsize len, const jfloat *buf),
                       jsize (JNICALL *JNIEnv_GetArrayLength) (JNIEnv *env, jarray array),
@@ -45,6 +46,7 @@ extern "C" {
         env->GetStringCritical = JNIEnv_GetStringCritical;
         env->ReleaseStringCritical = JNIEnv_ReleaseStringCritical;
 
+        env->SetByteArrayRegion = JNIEnv_SetByteArrayRegion;
         env->SetShortArrayRegion = JNIEnv_SetShortArrayRegion;
         env->SetFloatArrayRegion = JNIEnv_SetFloatArrayRegion;
         env->GetArrayLength = JNIEnv_GetArrayLength;

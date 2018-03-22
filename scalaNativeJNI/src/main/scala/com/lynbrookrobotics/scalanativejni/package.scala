@@ -61,6 +61,12 @@ package object scalanativejni {
     cstr
   }
 
+  def setByteArrayRegion(env: Env, to: Array[Byte], start: Int, len: Int, buf: Ptr[Byte]): Unit = {
+    (0 until len).foreach { fromIndex =>
+      to(start + fromIndex) = !(buf + fromIndex)
+    }
+  }
+
   def setShortArrayRegion(env: Env, to: Array[Short], start: Int, len: Int, buf: Ptr[Short]): Unit = {
     (0 until len).foreach { fromIndex =>
       to(start + fromIndex) = !(buf + fromIndex)
@@ -151,6 +157,9 @@ package object scalanativejni {
     (env: Env, str: String) => getStringCritical(env, str),
     (env: Env, str: String, cStr: Ptr[Byte]) => stdlib.free(cStr),
 
+    (env: Env, to: Array[Byte], start: Int, len: Int, buf: Ptr[Byte]) => {
+      setByteArrayRegion(env, to, start, len, buf)
+    },
     (env: Env, to: Array[Short], start: Int, len: Int, buf: Ptr[Short]) => {
       setShortArrayRegion(env, to, start, len, buf)
     },
@@ -206,6 +215,7 @@ package object scalanativejni {
                   getStringCritical: CFunctionPtr2[Env, String, Ptr[Byte]],
                   releaseStringCritical: CFunctionPtr3[Env, String, Ptr[Byte], Unit],
 
+                  setByteArrayRegion: CFunctionPtr5[Env, Array[Byte], Int, Int, Ptr[Byte], Unit],
                   setShortArrayRegion: CFunctionPtr5[Env, Array[Short], Int, Int, Ptr[Short], Unit],
                   setFloatArrayRegion: CFunctionPtr5[Env, Array[Float], Int, Int, Ptr[Float], Unit],
                   getArrayLength: CFunctionPtr2[Env, Array[_], Int],
