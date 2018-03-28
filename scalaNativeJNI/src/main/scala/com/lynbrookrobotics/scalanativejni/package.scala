@@ -110,6 +110,14 @@ package object scalanativejni {
     )
   }
 
+  def getByteArrayElements(env: Env, byteArray: Array[Byte], something: Ptr[Boolean]) = {
+    val ret = stdlib.malloc(byteArray.length)
+    (0 until byteArray.length).foreach { i =>
+      !(ret + i) = byteArray(i)
+    }
+    ret
+  }
+
   private var globalRefs = List[Object]()
 
   def newGlobalRef(env: Env, obj: Object): Object = {
@@ -166,10 +174,15 @@ package object scalanativejni {
     (env: Env, to: Array[Float], start: Int, len: Int, buf: Ptr[Float]) => {
       setFloatArrayRegion(env, to, start, len, buf)
     },
+    (env: Env, byteArray: Array[Byte], something: Ptr[Boolean]) => {
+      getByteArrayElements(env, byteArray, something)
+    },
+    (env: Env, byteArray: Array[Byte], mem: Ptr[Byte], mode: Int) => {
+      stdlib.free(mem)
+    },
     (env: Env, arr: Array[_]) => {
       arr.length
     },
-
     (env: Env, address: Ptr[Byte], capacity: Long) => {
       newDirectByteBuffer(env, address, capacity)
     },
@@ -218,6 +231,8 @@ package object scalanativejni {
                   setByteArrayRegion: CFunctionPtr5[Env, Array[Byte], Int, Int, Ptr[Byte], Unit],
                   setShortArrayRegion: CFunctionPtr5[Env, Array[Short], Int, Int, Ptr[Short], Unit],
                   setFloatArrayRegion: CFunctionPtr5[Env, Array[Float], Int, Int, Ptr[Float], Unit],
+                  getByteArrayElements: CFunctionPtr3[Env, Array[Byte], Ptr[Boolean], Ptr[Byte]],
+                  releaseByteArrayElements: CFunctionPtr4[Env, Array[Byte], Ptr[Byte], Int, Unit],
                   getArrayLength: CFunctionPtr2[Env, Array[_], Int],
 
                   newDirectByteBuffer: CFunctionPtr3[Env, Ptr[Byte], Long, ByteBuffer],

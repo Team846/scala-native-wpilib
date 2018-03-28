@@ -21,6 +21,8 @@ extern "C" {
                       void (JNICALL *JNIEnv_SetByteArrayRegion) (JNIEnv *env, jbyteArray array, jsize start, jsize len, const jbyte *buf),
                       void (JNICALL *JNIEnv_SetShortArrayRegion) (JNIEnv *env, jshortArray array, jsize start, jsize len, const jshort *buf),
                       void (JNICALL *JNIEnv_SetFloatArrayRegion) (JNIEnv *env, jfloatArray array, jsize start, jsize len, const jfloat *buf),
+                      jbyte * (JNICALL *JNIEnv_GetByteArrayElements) (JNIEnv *env, jbyteArray array, jboolean *isCopy),
+                      void (JNICALL *JNIEnv_ReleaseByteArrayElements) (JNIEnv *env, jbyteArray array, jbyte *elems, jint mode),
                       jsize (JNICALL *JNIEnv_GetArrayLength) (JNIEnv *env, jarray array),
 
                       jobject (JNICALL *JNIEnv_NewDirectByteBuffer) (JNIEnv* env, void* address, jlong capacity),
@@ -49,6 +51,8 @@ extern "C" {
         env->SetByteArrayRegion = JNIEnv_SetByteArrayRegion;
         env->SetShortArrayRegion = JNIEnv_SetShortArrayRegion;
         env->SetFloatArrayRegion = JNIEnv_SetFloatArrayRegion;
+        env->GetByteArrayElements = JNIEnv_GetByteArrayElements;
+        env->ReleaseByteArrayElements = JNIEnv_ReleaseByteArrayElements;
         env->GetArrayLength = JNIEnv_GetArrayLength;
 
         env->NewDirectByteBuffer = JNIEnv_NewDirectByteBuffer;
